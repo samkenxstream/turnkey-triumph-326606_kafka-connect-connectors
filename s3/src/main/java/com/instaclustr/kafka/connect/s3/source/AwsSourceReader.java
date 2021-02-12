@@ -5,16 +5,22 @@ import com.amazonaws.services.s3.iterable.S3Objects;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.instaclustr.kafka.connect.s3.AwsConnectorStringFormats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.regex.Matcher;
-
+import java.util.zip.InflaterInputStream;
+import com.fasterxml.jackson.core.type.TypeReference;
 /**
  * This class handles reading S3Objects for the assigned topic partitions and keeping track of the read position
  * It will return a TopicPartitionSegmentParser per valid S3Object read in
@@ -31,8 +37,11 @@ public class AwsSourceReader {
     private final String awsBucket;
     private final String topicPrefix;
     private HashMap<String, AwsReadPosition> topicPartitionReadPositions;
+    private HashMap<String, Map<String,Long>> topicPartitionConsumerOffset = new HashMap<>();
     private static final String MARKER_TEMPLATE = "%s%s-%s";
-
+    private TypeReference<HashMap<String, Long>> typeRef
+		    = new TypeReference<HashMap<String, Long>>() {
+		};
     private static Logger log = LoggerFactory.getLogger(AwsSourceReader.class);
 
     public AwsSourceReader(final AmazonS3 s3Client, final String bucket, final String awsPrefix, String topicPrefix, Map<String, Map<String, Object>> topicPartitionOffsets) {
@@ -74,8 +83,11 @@ public class AwsSourceReader {
 
     private HashMap<String, AwsReadPosition> generateReadPositionsForEachTopicPartition(Map<String, Map<String, Object>> topicPartitionOffsets) {
         HashMap<String, AwsReadPosition> awsReadPositions = new HashMap<>();
+        System.out.println("generateReadPositionsForEachTopicPartition:::"+topicPartitionOffsets.keySet());
+        log.info("generateReadPositionsForEachTopicPartition:::{}",topicPartitionOffsets.keySet());
         for (Map.Entry<String, Map<String, Object>> topicPartitionOffsetEntry : topicPartitionOffsets.entrySet()) {
             Map<String, Object> sourceOffsetRecord;
+            log.info("topicPartitionOffsetEntry::{}",topicPartitionOffsetEntry.getKey());
             String awsS3Prefix = String.format("%s%s%s", awsS3CommonPrefix, topicPartitionOffsetEntry.getKey(), AwsConnectorStringFormats.AWS_S3_DELIMITER);
             S3Objects s3Objects = S3Objects.withPrefix(this.s3Client, awsBucket, awsS3Prefix);
             long lastRecordedOffset = -1; //lower than zero
@@ -97,11 +109,29 @@ public class AwsSourceReader {
                 }
             }
             AwsReadPosition position = new AwsReadPosition(s3Objects, lastRecordedOffset);
+            log.info("awsS3Prefix{}",awsS3Prefix);
+            GetObjectRequest getOffsetObjectRequest = new GetObjectRequest(awsBucket, awsS3Prefix+"offset/consumer_offsets");
+            S3Object s3ObjectOffset = s3Client.getObject(getOffsetObjectRequest);
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+//				@SuppressWarnings("unchecked")
+				Map<String,Long> consumerOffset =  objectMapper.readValue(s3ObjectOffset.getObjectContent(), typeRef);
+				topicPartitionConsumerOffset.putIfAbsent(topicPartitionOffsetEntry.getKey(),consumerOffset);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				log.error(e.getMessage());
+			}
             awsReadPositions.put(topicPartitionOffsetEntry.getKey(), position);
+            
         }
         return awsReadPositions;
     }
-
+    
+    public Map<String,Long> getTopicOffset(String topicpar) {
+    	return topicPartitionConsumerOffset.get(topicpar);
+		
+	}
+    
     public void revertAwsReadPositionMarker(String topicPartition) {
         AwsReadPosition position = this.topicPartitionReadPositions.get(topicPartition);
         if (position.getLastReadOffset() > -1) {

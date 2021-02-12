@@ -96,27 +96,6 @@ public class AwsStorageSourceTaskTest {
         Assert.expectThrows(MissingRecordsException.class, awsStorageSourceTask::poll);
         verify(mockAwsSourceReader, times(0)).revertAwsReadPositionMarker(any());
     }
-
-    @Test
-    public void givenObjectStreamThatGivesBadOffsetRecordThrowException() throws Exception {
-        TransferManagerProvider mockTransferManagerProvider = mock(TransferManagerProvider.class);
-        AwsSourceReader mockAwsSourceReader = mock(AwsSourceReader.class);
-        TopicPartitionSegmentParser mockTopicPartitionSegmentParser = mock(TopicPartitionSegmentParser.class);
-
-        doReturn(mockTopicPartitionSegmentParser).when(mockAwsSourceReader).getNextTopicPartitionSegmentParser();
-        doReturn("test").when(mockTopicPartitionSegmentParser).getTopic();
-        doReturn(0).when(mockTopicPartitionSegmentParser).getPartition();
-        doReturn(1L).when(mockAwsSourceReader).getLastReadOffset(any());
-        HashMap<String, Object> sourceOffset = new HashMap<>();
-        sourceOffset.put("lastReadOffset", 5L);
-        sourceOffset.put("s3ObjectKey", "test-key");
-
-        doReturn(new SourceRecord(Collections.emptyMap(), sourceOffset, "test", 0, Schema.BYTES_SCHEMA, new byte[0])).when(mockTopicPartitionSegmentParser).getNextRecord(any(), any());
-
-        AwsStorageSourceTask awsStorageSourceTask = new AwsStorageSourceTask(mockTransferManagerProvider, mockAwsSourceReader);
-        Assert.expectThrows(MissingRecordsException.class, awsStorageSourceTask::poll);
-    }
-
     @Test
     public void givenAwsSdkThrowsServiceTypeAwsServerExceptionResetReadPosition() throws IOException {
         TransferManagerProvider mockTransferManagerProvider = mock(TransferManagerProvider.class);
@@ -134,7 +113,6 @@ public class AwsStorageSourceTaskTest {
         awsStorageSourceTask.poll();
         verify(mockAwsSourceReader, times(1)).revertAwsReadPositionMarker(any());
     }
-
     @Test
     public void givenAwsSdkThrowsRetryableAwsClientExceptionResetReadPosition() throws IOException {
         TransferManagerProvider mockTransferManagerProvider = mock(TransferManagerProvider.class);
@@ -150,26 +128,5 @@ public class AwsStorageSourceTaskTest {
         AwsStorageSourceTask awsStorageSourceTask = new AwsStorageSourceTask(mockTransferManagerProvider, mockAwsSourceReader);
         awsStorageSourceTask.poll();
         verify(mockAwsSourceReader, times(1)).revertAwsReadPositionMarker(any());
-    }
-
-    @Test
-    public void recordProducerRateLimitTest() throws Exception {
-        TransferManagerProvider mockTransferManagerProvider = mock(TransferManagerProvider.class);
-        AwsSourceReader mockAwsSourceReader = mock(AwsSourceReader.class);
-        TopicPartitionSegmentParser topicPartitionSegmentParser = mock(TopicPartitionSegmentParser.class);
-        AwsStorageSourceTask awsStorageSourceTask = new AwsStorageSourceTask(mockTransferManagerProvider, mockAwsSourceReader);
-        doReturn(topicPartitionSegmentParser).when(mockAwsSourceReader).getNextTopicPartitionSegmentParser();
-        doReturn(-1L).when(mockAwsSourceReader).getLastReadOffset(any());
-        doReturn(0L).when(topicPartitionSegmentParser).getEndOffset();
-        HashMap<String, Long> lastOffsetInfoMap = new HashMap<>();
-        lastOffsetInfoMap.put("lastReadOffset", 0L);
-        doReturn(new SourceRecord(new HashMap<>(), lastOffsetInfoMap, "test", 0, Schema.BYTES_SCHEMA,
-                new byte[0])).when(topicPartitionSegmentParser).getNextRecord(any(), any());
-        ZonedDateTime startTime = ZonedDateTime.now();
-        for (int i = 0; i < 1250; i++) {
-            awsStorageSourceTask.poll();
-        }
-        long elapsedTimeSeconds = startTime.until(ZonedDateTime.now(), ChronoUnit.SECONDS);
-        Assert.assertTrue(elapsedTimeSeconds >= 2);
     }
 }

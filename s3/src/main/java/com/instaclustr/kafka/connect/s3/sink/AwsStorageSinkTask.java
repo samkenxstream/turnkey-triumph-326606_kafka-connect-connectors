@@ -5,8 +5,7 @@ import com.instaclustr.kafka.connect.s3.AwsStorageConnectorCommonConfig;
 import com.instaclustr.kafka.connect.s3.TransferManagerProvider;
 import com.instaclustr.kafka.connect.s3.VersionUtil;
 
-import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.admin.AdminClient; 
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.connect.errors.ConnectException;
@@ -15,8 +14,7 @@ import org.apache.kafka.connect.sink.SinkTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.FileInputStream; 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -30,9 +28,10 @@ public class AwsStorageSinkTask extends SinkTask {
     private AwsStorageSinkWriter sinkWriter;
     private TransferManagerProvider transferManagerProvider;
     private Map<TopicPartition, TopicPartitionBuffer> topicPartitionBuffers = new HashMap<>();
-    private Map<TopicPartition, BeginOffsetTotalRecords> beginOffsetTotalRecords = new HashMap<>();
-    private OffsetSink offsetSink;
+    private Map<TopicPartition, Long> topicPartitionTotalRecords = new HashMap<>();
     
+    
+    private OffsetSink offsetSink;
     public AwsStorageSinkTask() { //do not remove, kafka connect usage
     }
 
@@ -63,15 +62,10 @@ public class AwsStorageSinkTask extends SinkTask {
         TopicPartition topicPartition = new TopicPartition(record.topic(), record.kafkaPartition());
         // actual work
         TopicPartitionBuffer latestBuffer = topicPartitionBuffers.get(topicPartition);
-        BeginOffsetTotalRecords beginOffsetTotalRecord = beginOffsetTotalRecords.get(topicPartition);
-        if(beginOffsetTotalRecord.getBeginningOffset() == 0L) {
-        	beginOffsetTotalRecord.setBeginningOffset(record.kafkaOffset());
-        }
-        beginOffsetTotalRecord.setTotalRecords(beginOffsetTotalRecord.getTotalRecords()+1L);
-        
+        topicPartitionTotalRecords.put(topicPartition, topicPartitionTotalRecords.get(topicPartition)+1L);
         try {
             latestBuffer.putRecord(record);
-            beginOffsetTotalRecords.put(topicPartition, beginOffsetTotalRecord);
+            
         } catch (MaxBufferSizeExceededException ex) {
             // We need to make a new buffer, so flush the existing one first if there is anything in it
             if (latestBuffer.getStartOffset() > -1) sinkWriter.writeDataSegment(latestBuffer);
@@ -81,6 +75,7 @@ public class AwsStorageSinkTask extends SinkTask {
             // Further MaxBufferSizeExceededExceptions will be unhandled. This indicates a record too big even by itself
             newBuffer.putRecord(record);
         }
+        
     }
 
     @Override
@@ -146,7 +141,7 @@ public class AwsStorageSinkTask extends SinkTask {
             logger.debug("Opening topic {}, partition {}", tp.topic(), tp.partition());
             try {
                 topicPartitionBuffers.putIfAbsent(tp, new TopicPartitionBuffer(tp.topic(), tp.partition()));
-                beginOffsetTotalRecords.putIfAbsent(tp, new BeginOffsetTotalRecords(0L,0L));
+                topicPartitionTotalRecords.putIfAbsent(tp, 0L);
                 writeCounsumerOffset(tp);
             } catch (IOException e) {
                 // We can't handle this, need to wrap in a runtime exception since the open call doesn't allow checked exceptions
@@ -163,13 +158,14 @@ public class AwsStorageSinkTask extends SinkTask {
             topicPartitionBuffers.remove(tp);
         });
     }
-    
   private void writeCounsumerOffset(TopicPartition topicPartition) {
+    
 	try {	
-      	ObjectMapper mapperObj = new ObjectMapper();
+    
+    	ObjectMapper mapperObj = new ObjectMapper();
     	Map<String,Long> consumer_offset = offsetSink.syncOffsets(topicPartition);
-    	consumer_offset.put("beginning_offset", beginOffsetTotalRecords.get(topicPartition).getBeginningOffset());
-    	consumer_offset.put("totalrecords", beginOffsetTotalRecords.get(topicPartition).getTotalRecords());
+    	// populating total records for TopicPartition. It can be used for further analysis. 
+    	consumer_offset.put("sink_tp_totalrecords", topicPartitionTotalRecords.get(topicPartition));
     	String jsonconsumeroffset = mapperObj.writeValueAsString(consumer_offset);
 		logger.debug("jsonconsumeroffset::{} TopicPartition:: {}  ",jsonconsumeroffset,topicPartition);
 		sinkWriter.writeOffsetData(topicPartition, jsonconsumeroffset, "consumer_offsets");
@@ -178,7 +174,6 @@ public class AwsStorageSinkTask extends SinkTask {
 	}
 	
   }
-  
   private Properties getAdminClientConfig() {
 	  Properties adminProps = new Properties(); 
 		  try {
