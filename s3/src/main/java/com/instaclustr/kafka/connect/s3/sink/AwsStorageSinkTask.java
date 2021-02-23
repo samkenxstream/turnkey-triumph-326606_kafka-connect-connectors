@@ -29,8 +29,6 @@ public class AwsStorageSinkTask extends SinkTask {
     private TransferManagerProvider transferManagerProvider;
     private Map<TopicPartition, TopicPartitionBuffer> topicPartitionBuffers = new HashMap<>();
     private Map<TopicPartition, Long> topicPartitionTotalRecords = new HashMap<>();
-    
-    
     private OffsetSink offsetSink;
     public AwsStorageSinkTask() { //do not remove, kafka connect usage
     }
@@ -59,8 +57,7 @@ public class AwsStorageSinkTask extends SinkTask {
     }
 
     private void putSingleRecord(SinkRecord record) throws IOException, RecordOutOfOrderException, InterruptedException, MaxBufferSizeExceededException {
-        TopicPartition topicPartition = new TopicPartition(record.topic(), record.kafkaPartition());
-        // actual work
+        TopicPartition topicPartition = new TopicPartition(record.topic(), record.kafkaPartition()); 
         TopicPartitionBuffer latestBuffer = topicPartitionBuffers.get(topicPartition);
         topicPartitionTotalRecords.put(topicPartition, topicPartitionTotalRecords.get(topicPartition)+1L);
         try {
@@ -75,7 +72,6 @@ public class AwsStorageSinkTask extends SinkTask {
             // Further MaxBufferSizeExceededExceptions will be unhandled. This indicates a record too big even by itself
             newBuffer.putRecord(record);
         }
-        
     }
 
     @Override
@@ -158,29 +154,29 @@ public class AwsStorageSinkTask extends SinkTask {
             topicPartitionBuffers.remove(tp);
         });
     }
-  private void writeCounsumerOffset(TopicPartition topicPartition) {
     
-	try {	
-    
-    	ObjectMapper mapperObj = new ObjectMapper();
-    	Map<String,Long> consumer_offset = offsetSink.syncOffsets(topicPartition);
-    	// populating total records for TopicPartition. It can be used for further analysis. 
-    	consumer_offset.put("sink_tp_totalrecords", topicPartitionTotalRecords.get(topicPartition));
-    	String jsonconsumeroffset = mapperObj.writeValueAsString(consumer_offset);
-		logger.debug("jsonconsumeroffset::{} TopicPartition:: {}  ",jsonconsumeroffset,topicPartition);
-		sinkWriter.writeOffsetData(topicPartition, jsonconsumeroffset, "consumer_offsets");
-    } catch (IOException | InterruptedException ex) { 
-        throw new ConnectException(ex);
-	}
-	
-  }
-  private Properties getAdminClientConfig() {
-	  Properties adminProps = new Properties(); 
-		  try {
-				adminProps.load(new FileInputStream(AwsStorageConnectorCommonConfig.CONNECT_DISTRIBUTED_PROPERTIES));
-			} catch (IOException  e) {
-				throw new ConnectException(e);
-			} 
-		  return adminProps;
-	}
+   private void writeCounsumerOffset(TopicPartition topicPartition) {
+	   try {	
+	    
+	    	ObjectMapper mapperObj = new ObjectMapper();
+	    	Map<String,Long> consumer_offset = offsetSink.syncOffsets(topicPartition);
+	    	// populating total records for TopicPartition. It can be used for further analysis. 
+	    	consumer_offset.put("sink_tp_totalrecords", topicPartitionTotalRecords.get(topicPartition));
+	    	String jsonconsumeroffset = mapperObj.writeValueAsString(consumer_offset);
+			logger.debug("jsonconsumeroffset::{} TopicPartition:: {}  ",jsonconsumeroffset,topicPartition);
+			sinkWriter.writeOffsetData(topicPartition, jsonconsumeroffset, "consumer_offsets");
+	    } catch (IOException | InterruptedException ex) { 
+	        throw new ConnectException(ex);
+		}
+   }
+  
+   private Properties getAdminClientConfig() {
+	   Properties adminProps = new Properties(); 
+	  try {
+			adminProps.load(new FileInputStream(AwsStorageConnectorCommonConfig.CONNECT_DISTRIBUTED_PROPERTIES));
+		  } catch (IOException  e) {
+			throw new ConnectException(e);
+		  } 
+	  return adminProps;
+   	}
 }

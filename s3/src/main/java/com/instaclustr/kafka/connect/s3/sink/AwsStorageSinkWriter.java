@@ -19,7 +19,6 @@ public class AwsStorageSinkWriter {
     private TransferManager transferManager;
     private String bucketName;
     private String keyPrefix;
-
     public AwsStorageSinkWriter(final TransferManager transferManager, final String bucket, final String keyPrefix) {
         this.transferManager = transferManager;
         this.bucketName = bucket;
@@ -37,6 +36,7 @@ public class AwsStorageSinkWriter {
         upload.waitForCompletion();
         topicPartitionBuffer.cleanResources();
     }
+    
     public void writeOffsetData(TopicPartition  topicPartition ,String offsetData,String filename) throws IOException, InterruptedException {
     	InputStream targetStream = new ByteArrayInputStream(offsetData.getBytes());
         ObjectMetadata metadata = new ObjectMetadata();

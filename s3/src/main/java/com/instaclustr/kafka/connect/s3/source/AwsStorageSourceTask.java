@@ -3,7 +3,6 @@ package com.instaclustr.kafka.connect.s3.source;
 import com.amazonaws.AmazonClientException;
 import com.google.common.util.concurrent.RateLimiter;
 import com.google.common.util.concurrent.UncheckedExecutionException;
-import com.google.common.util.concurrent.UncheckedTimeoutException;
 import com.instaclustr.kafka.connect.s3.AwsConnectorStringFormats;
 import com.instaclustr.kafka.connect.s3.AwsStorageConnectorCommonConfig;
 import com.instaclustr.kafka.connect.s3.TransferManagerProvider;
@@ -111,8 +110,7 @@ public class AwsStorageSourceTask extends SourceTask {
             Map<String, Object> offset = offsetMap.get(key);
             topicPartitionOffsets.put(key.get("source"), offset);
         });
-        log.info("topicPartitionOffsets inside loadSource:: "+topicPartitionOffsets.keySet());
-        
+        log.debug("topicPartitionOffsets inside loadSource:: "+topicPartitionOffsets.keySet());
         return topicPartitionOffsets;
     }
 
@@ -151,10 +149,8 @@ public class AwsStorageSourceTask extends SourceTask {
                                 lastReadOffset, topicPartitionSegmentParser.getEndOffset()));
                     }
                 } while (notComplete);
-                log.info("commitRecord topicPartition: {} ,records:  {}",topicPartition,topicPartitionRestoredRecords.get(topicPartition));
-                
+                log.debug("commitRecord topicPartition: {} ,records:  {}",topicPartition,topicPartitionRestoredRecords.get(topicPartition));
                 offsetSource.syncGroupForOffset(new TopicPartition(topicPartitionSegmentParser.getTopic(),topicPartitionSegmentParser.getPartition()), awsSourceReader.getTopicOffset(topicPartition),topicPartitionBeginingOffset.get(topicPartition), topicPartitionRestoredRecords.get(topicPartition));
-                
                 topicPartitionSegmentParser.closeResources();
             } catch (InterruptedException e) {
                 log.info("Thread interrupted in poll. Shutting down", e);
@@ -183,7 +179,6 @@ public class AwsStorageSourceTask extends SourceTask {
                 throw new ConnectException(e);
             }
         }
-        
         ArrayList<SourceRecord> sourceRecords = new ArrayList<>();
         while(!this.recordsToBeDelivered.isEmpty() && this.pollRecordRateLimiter.tryAcquire(this.pollSleepIntervalMs,TimeUnit.MILLISECONDS)){
             sourceRecords.add(this.recordsToBeDelivered.poll());
@@ -193,7 +188,6 @@ public class AwsStorageSourceTask extends SourceTask {
 
     @Override
     public void stop() {
-    	System.out.println("Task shutdown success");
     	Thread.interrupted();
         log.info("Task shutdown success");
     }

@@ -3,7 +3,6 @@ package com.instaclustr.kafka.connect.s3.source;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -27,10 +26,8 @@ public class OffsetSource {
 	public OffsetSource() {
 		this.consumerConfig = getAdminClientConfig();
 	}
-	/*
-	 * setting kafka admin configuration for kafka consumer
-	 * 
-	 */
+	/* Setting kafka admin configuration for kafka consumer */
+	
 	private Properties getAdminClientConfig() {
 		  Properties adminProps = new Properties(); 
 			  try {
@@ -42,8 +39,6 @@ public class OffsetSource {
 				} 
 			  return adminProps;
 		}
-	   
-
 	/*
 	 * Offset transformation logic:
 	 * 
@@ -60,9 +55,8 @@ public class OffsetSource {
 	 * <Senario> Offsets are going to
 	 * commit in batches.
 	 */
-
 	
-	    public void syncGroupForOffset(TopicPartition topicPartition, Map<String,Long> consumerGroups,Long beginningOffset,Long totalRecords) {
+	public void syncGroupForOffset(TopicPartition topicPartition, Map<String,Long> consumerGroups,Long beginningOffset,Long totalRecords) {
 	    	log.info("topic partition : {}, beginningOffset {} ",topicPartition, beginningOffset);
 	    	 for (Map.Entry<String, Long> entry : consumerGroups.entrySet()) {
 	    		 

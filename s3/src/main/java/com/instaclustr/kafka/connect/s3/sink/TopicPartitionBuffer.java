@@ -24,7 +24,6 @@ public class TopicPartitionBuffer {
     private DataOutputStream dataStream;
     private PipedInputStream pipedInputStream;
     private RecordFormat recordFormat;
-
     private static Logger logger = LoggerFactory.getLogger(TopicPartitionBuffer.class);
 
     public TopicPartitionBuffer(final TopicPartition topicPartition) throws IOException {
