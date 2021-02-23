@@ -3,7 +3,6 @@ package com.instaclustr.kafka.connect.s3;
 import com.instaclustr.kafka.connect.s3.sink.TopicPartitionBuffer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.common.TopicPartition;
-
 import java.util.regex.Pattern;
 
 public class AwsConnectorStringFormats {

@@ -7,7 +7,6 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.connect.errors.RetriableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory; 
-
 import java.io.IOException; 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,7 +28,6 @@ public class OffsetSink {
 	public void syncConsumerGroups() {
 		try {
             consumerGroups = adminClient.listConsumerGroups().all().get().stream().map(ConsumerGroupListing::groupId).collect(Collectors.toList());
-
 		} catch (InterruptedException | ExecutionException e) {
 			throw new RetriableException(e);
 		}
@@ -59,19 +57,15 @@ public class OffsetSink {
 		try {
 			topicOffsetsAndMetadata = adminClient.listConsumerGroupOffsets(consumerGroup)
 					.partitionsToOffsetAndMetadata().get().entrySet().stream().filter(tp -> tp.getKey().equals(topicPartition)).iterator();
-			
 			if(topicOffsetsAndMetadata.hasNext()) {
 				Entry<TopicPartition, OffsetAndMetadata> entry = topicOffsetsAndMetadata.next(); 
 				OffsetAndMetadata offsetAndMetadata = entry.getValue(); 
 				log.debug("topic {} partitons {} consumerGroup {} offset {}",topicPartition.topic(),topicPartition.partition(),consumerGroup,offsetAndMetadata.offset());
 				consumerGroupOffset.put(consumerGroup, offsetAndMetadata.offset());	
 			}
-			
-			
 		} catch (InterruptedException | ExecutionException e) {
 			throw new RetriableException(e);
 		}
-		
 		return consumerGroupOffset;
 	}
 }

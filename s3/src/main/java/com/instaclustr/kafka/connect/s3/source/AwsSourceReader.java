@@ -79,11 +79,8 @@ public class AwsSourceReader {
 
     private HashMap<String, AwsReadPosition> generateReadPositionsForEachTopicPartition(Map<String, Map<String, Object>> topicPartitionOffsets) {
         HashMap<String, AwsReadPosition> awsReadPositions = new HashMap<>();
-        System.out.println("generateReadPositionsForEachTopicPartition:::"+topicPartitionOffsets.keySet());
-        log.info("generateReadPositionsForEachTopicPartition:::{}",topicPartitionOffsets.keySet());
         for (Map.Entry<String, Map<String, Object>> topicPartitionOffsetEntry : topicPartitionOffsets.entrySet()) {
             Map<String, Object> sourceOffsetRecord;
-            log.info("topicPartitionOffsetEntry::{}",topicPartitionOffsetEntry.getKey());
             String awsS3Prefix = String.format("%s%s%s", awsS3CommonPrefix, topicPartitionOffsetEntry.getKey(), AwsConnectorStringFormats.AWS_S3_DELIMITER);
             S3Objects s3Objects = S3Objects.withPrefix(this.s3Client, awsBucket, awsS3Prefix);
             long lastRecordedOffset = -1; //lower than zero
@@ -105,7 +102,6 @@ public class AwsSourceReader {
                 }
             }
             AwsReadPosition position = new AwsReadPosition(s3Objects, lastRecordedOffset);
-            log.info("awsS3Prefix{}",awsS3Prefix);
             GetObjectRequest getOffsetObjectRequest = new GetObjectRequest(awsBucket, awsS3Prefix+"offset/consumer_offsets");
             S3Object s3ObjectOffset = s3Client.getObject(getOffsetObjectRequest);
             ObjectMapper objectMapper = new ObjectMapper();
@@ -118,14 +114,12 @@ public class AwsSourceReader {
 				log.error(e.getMessage());
 			}
             awsReadPositions.put(topicPartitionOffsetEntry.getKey(), position);
-            
         }
         return awsReadPositions;
     }
     
     public Map<String,Long> getTopicOffset(String topicpar) {
     	return topicPartitionConsumerOffset.get(topicpar);
-		
 	}
     
     public void revertAwsReadPositionMarker(String topicPartition) {
@@ -167,5 +161,5 @@ public class AwsSourceReader {
         }
         log.debug("Current paused position size : {}",this.pausedReadPositions.size());
     }
-
 }
+

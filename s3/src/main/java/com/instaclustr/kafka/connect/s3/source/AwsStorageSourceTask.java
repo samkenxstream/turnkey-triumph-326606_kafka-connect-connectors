@@ -14,7 +14,6 @@ import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -83,18 +82,15 @@ public class AwsStorageSourceTask extends SourceTask {
 
     private void setInitialConsumerGroup(List<String> topicPartitionList) {
     	topicPartitionList.forEach(tp->{
-    		log.info("setInitialConsumerGroup {}",tp);
+    		log.debug("setInitialConsumerGroup {}",tp);
          	 Matcher fileNameMatcher = Pattern.compile("^.*?([^/]+)/([0-9]+)").matcher(tp);
          	 if(fileNameMatcher.matches()) {
          		offsetSource.syncGroupForOffset(new TopicPartition(fileNameMatcher.group(1),Integer.parseInt(fileNameMatcher.group(2))),awsSourceReader.getTopicOffset(tp),0L,0L);	 
          	 }
-         	 	
-         
          });
 	}
 
 	public Map<String, Map<String, Object>> loadSourceConnectorTopicPartitionOffsets(List<String> topicPartitions) {
-    	
         Map<String, Map<String, Object>> topicPartitionOffsets = new HashMap<>();
         String targetTopicPrefix = this.configMap.getOrDefault(AwsStorageSourceConnector.SINK_TOPIC_PREFIX, "");
         List<Map<String, String>> offsetPartitions = topicPartitions.stream().map(
@@ -130,7 +126,6 @@ public class AwsStorageSourceTask extends SourceTask {
                 }
                 topicPartition = String.format("%s/%d", topicPartitionSegmentParser.getTopic(), topicPartitionSegmentParser.getPartition());
                 topicPartitionRestoredRecords.putIfAbsent(topicPartition, 0L);
-                
                 long lastReadOffset = awsSourceReader.getLastReadOffset(topicPartition);
                 boolean notComplete;
                 do {

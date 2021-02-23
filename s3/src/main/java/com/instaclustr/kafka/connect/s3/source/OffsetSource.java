@@ -38,7 +38,7 @@ public class OffsetSource {
 					throw new ConnectException(e);
 				} 
 			  return adminProps;
-		}
+	}
 	/*
 	 * Offset transformation logic:
 	 * 
@@ -66,18 +66,15 @@ public class OffsetSource {
 	                groupConsumerConfig.put("group.id", group);
 	                Consumer<byte[], byte[]> consumer = new KafkaConsumer<>(groupConsumerConfig);
 	                consumer.assign(Collections.singletonList(topicPartition));
-	                
 	                Long consumerGroupOffset = (offset-beginningOffset)< 0 ? 0L : offset-beginningOffset;
 	                consumerGroupOffset = consumerGroupOffset > totalRecords?totalRecords:consumerGroupOffset;
-	                
 	                OffsetAndMetadata offsetAndMetadata = new OffsetAndMetadata(consumerGroupOffset);
 	                Map<TopicPartition, OffsetAndMetadata> offsets = Collections.singletonMap(topicPartition, offsetAndMetadata);
 	                consumer.commitSync(offsets);
 	                consumer.close();
 	                log.debug("Committed offset {} for group {}, topic {} and partition {}",
 	                		offsets.get(topicPartition).offset(), group, topicPartition.topic(), topicPartition.partition());
-	               
 	            }
-	    }
-
+	}
 }
+

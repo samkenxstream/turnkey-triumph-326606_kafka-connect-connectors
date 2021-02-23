@@ -62,7 +62,6 @@ public class AwsStorageSinkTask extends SinkTask {
         topicPartitionTotalRecords.put(topicPartition, topicPartitionTotalRecords.get(topicPartition)+1L);
         try {
             latestBuffer.putRecord(record);
-            
         } catch (MaxBufferSizeExceededException ex) {
             // We need to make a new buffer, so flush the existing one first if there is anything in it
             if (latestBuffer.getStartOffset() > -1) sinkWriter.writeDataSegment(latestBuffer);
