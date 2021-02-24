@@ -8,6 +8,7 @@ import org.apache.kafka.common.config.Config;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.common.config.ConfigValue;
 import org.apache.kafka.connect.errors.ConnectException;
+
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -17,8 +18,11 @@ import java.util.regex.Pattern;
 
 public class AwsStorageConnectorCommonConfig {
     public static final String BUCKET = "aws.s3.bucket";
+	
     public static final String AWS_REGION = "aws.region";
+	
     public static final String S3_KEY_PREFIX = "prefix";
+
     public static final String CONNECT_DISTRIBUTED_PROPERTIES = "/etc/kafka/connect-distributed.properties";
     public static final String DEFAULT_AWS_REGION = Regions.DEFAULT_REGION.getName();
 
@@ -79,4 +83,5 @@ public class AwsStorageConnectorCommonConfig {
             addErrorMessageToConfigObject(configObject, AWS_REGION, "The defined aws.region is invalid");
         }
     }
+
 }
