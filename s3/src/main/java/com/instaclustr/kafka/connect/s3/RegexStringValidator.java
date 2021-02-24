@@ -12,8 +12,8 @@ import java.util.regex.Pattern;
 public class RegexStringValidator implements ConfigDef.Validator {
     private final Pattern pattern;
     private final String validationFailMessage;
-    
-    
+
+
     public RegexStringValidator(final Pattern pattern, final String validationFailMessage) {
         this.pattern = pattern;
         this.validationFailMessage = validationFailMessage;
