@@ -24,6 +24,7 @@ public class TopicPartitionBuffer {
     private DataOutputStream dataStream;
     private PipedInputStream pipedInputStream;
     private RecordFormat recordFormat;
+
     private static Logger logger = LoggerFactory.getLogger(TopicPartitionBuffer.class);
 
     public TopicPartitionBuffer(final TopicPartition topicPartition) throws IOException {
@@ -50,11 +51,13 @@ public class TopicPartitionBuffer {
         if (endOffset >= record.kafkaOffset()) {
             throw new RecordOutOfOrderException("Record offset must always be larger than the buffer latest record offset");
         }
+
         if (currentPosition == 0) {
             startOffset = record.kafkaOffset();
             dataStream.writeInt(0); // Version specifier
             currentPosition += Integer.BYTES;
         }
+
         currentPosition += recordFormat.writeRecord(dataStream, record, capacity - currentPosition);
         endOffset = record.kafkaOffset();
     }
@@ -62,6 +65,7 @@ public class TopicPartitionBuffer {
     public void flush() throws IOException {
         dataStream.flush();
     }
+
     // Use once only
     public InputStream getInputStream() throws IOException {
         this.flush();
@@ -95,4 +99,3 @@ public class TopicPartitionBuffer {
         return new TopicPartition(topic, partition);
     }
 }
-
