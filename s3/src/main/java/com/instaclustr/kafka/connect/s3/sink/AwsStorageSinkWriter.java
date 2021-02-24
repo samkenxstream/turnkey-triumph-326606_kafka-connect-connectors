@@ -14,11 +14,11 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-
 public class AwsStorageSinkWriter {
     private TransferManager transferManager;
     private String bucketName;
     private String keyPrefix;
+    
     public AwsStorageSinkWriter(final TransferManager transferManager, final String bucket, final String keyPrefix) {
         this.transferManager = transferManager;
         this.bucketName = bucket;

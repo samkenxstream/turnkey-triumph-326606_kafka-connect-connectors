@@ -37,7 +37,8 @@ public class AwsStorageSourceConnector extends SourceConnector {
     Map<String, String> configMap;
 
     private TransferManagerProvider transferManagerProvider;
-    
+
+
     public AwsStorageSourceConnector() { //do not remove, kafka connect usage
     }
 
@@ -86,6 +87,7 @@ public class AwsStorageSourceConnector extends SourceConnector {
             }
         }, 5, 5, TimeUnit.MINUTES);
     }
+
 
     @Override
     public Class<? extends Task> taskClass() {
@@ -146,4 +148,3 @@ public class AwsStorageSourceConnector extends SourceConnector {
         return configDef;
     }
 }
-
