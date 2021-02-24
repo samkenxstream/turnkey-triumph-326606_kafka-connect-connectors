@@ -2,6 +2,7 @@ package com.instaclustr.kafka.connect.s3;
 
 import com.instaclustr.kafka.connect.s3.sink.TopicPartitionBuffer;
 import org.apache.commons.lang3.StringUtils;
+
 import org.apache.kafka.common.TopicPartition;
 import java.util.regex.Pattern;
 
@@ -37,7 +38,8 @@ public class AwsConnectorStringFormats {
                 AwsConnectorStringFormats.convertLongIntoLexySortableString(topicPartitionBuffer.getStartOffset()),
                 AwsConnectorStringFormats.convertLongIntoLexySortableString(topicPartitionBuffer.getEndOffset()));
     }
-    public static String topicPartitionOffSetStorageName(String keyPrefix, TopicPartition topicPartition,String filename) {
+    
+    public static String topicPartitionOffSetStorageName(String keyPrefix, TopicPartition topicPartition, String filename) {
         return String.format(AwsConnectorStringFormats.S3_OBJECT_OFFSET_KEY_FORMAT,
                 keyPrefix,
                 topicPartition.topic(),
@@ -45,6 +47,7 @@ public class AwsConnectorStringFormats {
                 S3_OFFSET_FOLDER,
                 filename);
     }
+    
     public static String generateTargetTopic(String topicPrefix, String topic){
         return String.format("%s%s", (StringUtils.isBlank(topicPrefix) ? "" : topicPrefix + "-"), topic);
     }

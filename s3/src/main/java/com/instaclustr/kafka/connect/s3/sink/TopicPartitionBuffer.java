@@ -98,4 +98,5 @@ public class TopicPartitionBuffer {
     public TopicPartition toTopicPartition() {
         return new TopicPartition(topic, partition);
     }
+
 }
