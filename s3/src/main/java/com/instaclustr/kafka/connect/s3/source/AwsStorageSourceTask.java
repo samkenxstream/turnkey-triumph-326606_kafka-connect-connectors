@@ -3,12 +3,12 @@ package com.instaclustr.kafka.connect.s3.source;
 import com.amazonaws.AmazonClientException;
 import com.google.common.util.concurrent.RateLimiter;
 import com.google.common.util.concurrent.UncheckedExecutionException;
+import com.google.common.util.concurrent.UncheckedTimeoutException;
 import com.instaclustr.kafka.connect.s3.AwsConnectorStringFormats;
 import com.instaclustr.kafka.connect.s3.AwsStorageConnectorCommonConfig;
 import com.instaclustr.kafka.connect.s3.TransferManagerProvider;
 import com.instaclustr.kafka.connect.s3.VersionUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
@@ -20,9 +20,10 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
+import org.apache.kafka.common.TopicPartition;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class AwsStorageSourceTask extends SourceTask {
     private static final Logger log = LoggerFactory.getLogger(AwsStorageSourceTask.class);
@@ -49,7 +50,6 @@ public class AwsStorageSourceTask extends SourceTask {
         this.lastPausedQueueScanTimeStamp = System.currentTimeMillis();
         this.configMap = Collections.emptyMap();
         this.pollRecordRateLimiter = RateLimiter.create(500);
-        
     }
 
     public AwsStorageSourceTask(TransferManagerProvider transferManagerProvider, AwsSourceReader sourceReader, long pausedQueueScanIntervalMs, long pollSleepIntervalMs) {
@@ -81,16 +81,6 @@ public class AwsStorageSourceTask extends SourceTask {
         lastPausedQueueScanTimeStamp = System.currentTimeMillis();
     }
 
-    private void setInitialConsumerGroup(List<String> topicPartitionList) {
-    	topicPartitionList.forEach(tp->{
-    		log.debug("setInitialConsumerGroup {}",tp);
-         	 Matcher fileNameMatcher = Pattern.compile("^.*?([^/]+)/([0-9]+)").matcher(tp);
-         	 if(fileNameMatcher.matches()) {
-         		offsetSource.syncGroupForOffset(new TopicPartition(fileNameMatcher.group(1),Integer.parseInt(fileNameMatcher.group(2))),awsSourceReader.getTopicOffset(tp),0L,0L);	 
-         	 }
-         });
-	}
-
     public Map<String, Map<String, Object>> loadSourceConnectorTopicPartitionOffsets(List<String> topicPartitions) {
         Map<String, Map<String, Object>> topicPartitionOffsets = new HashMap<>();
         String targetTopicPrefix = this.configMap.getOrDefault(AwsStorageSourceConnector.SINK_TOPIC_PREFIX, "");
@@ -107,8 +97,17 @@ public class AwsStorageSourceTask extends SourceTask {
             Map<String, Object> offset = offsetMap.get(key);
             topicPartitionOffsets.put(key.get("source"), offset);
         });
-        log.debug("topicPartitionOffsets inside loadSource:: "+topicPartitionOffsets.keySet());
         return topicPartitionOffsets;
+    }
+
+    private void setInitialConsumerGroup(List<String> topicPartitionList) {
+    	topicPartitionList.forEach(tp->{
+    		log.debug("setInitialConsumerGroup {}",tp);
+         	 Matcher fileNameMatcher = Pattern.compile("^.*?([^/]+)/([0-9]+)").matcher(tp);
+         	 if(fileNameMatcher.matches()) {
+         		offsetSource.syncGroupForOffset(new TopicPartition(fileNameMatcher.group(1),Integer.parseInt(fileNameMatcher.group(2))),awsSourceReader.getTopicOffset(tp),0L,0L);	 
+         	 }
+         });
     }
 
     @Override
@@ -145,7 +144,6 @@ public class AwsStorageSourceTask extends SourceTask {
                                 lastReadOffset, topicPartitionSegmentParser.getEndOffset()));
                     }
                 } while (notComplete);
-                log.debug("commitRecord topicPartition: {} ,records:  {}",topicPartition,topicPartitionRestoredRecords.get(topicPartition));
                 offsetSource.syncGroupForOffset(new TopicPartition(topicPartitionSegmentParser.getTopic(),topicPartitionSegmentParser.getPartition()), awsSourceReader.getTopicOffset(topicPartition),topicPartitionBeginningOffset.get(topicPartition), topicPartitionRestoredRecords.get(topicPartition));
                 topicPartitionSegmentParser.closeResources();
             } catch (InterruptedException e) {
@@ -182,6 +180,7 @@ public class AwsStorageSourceTask extends SourceTask {
         }
         return sourceRecords;
     }
+
 
     @Override
     public void stop() {
