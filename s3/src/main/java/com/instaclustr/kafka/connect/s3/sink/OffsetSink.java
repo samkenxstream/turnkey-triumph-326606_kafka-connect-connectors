@@ -21,6 +21,7 @@ public class OffsetSink {
 	private static final Logger log = LoggerFactory.getLogger(OffsetSink.class);
 	private List<String> consumerGroups = new ArrayList<>();
 	private final AdminClient adminClient;
+
 	public OffsetSink(AdminClient adminClient) {
 		this.adminClient = adminClient;
 	}
@@ -50,8 +51,8 @@ public class OffsetSink {
 		return consumerGroupOffset;
 	}
 	//	Getting all the consumer group offsets for TopicPartition
-	
-	private Map<String,Long> syncOffsetsForGroup(String consumerGroup,TopicPartition topicPartition) throws IOException {
+
+	private Map<String,Long> syncOffsetsForGroup(String consumerGroup, TopicPartition topicPartition) throws IOException {
 		Iterator<Entry<TopicPartition, OffsetAndMetadata>> topicOffsetsAndMetadata;
 		Map<String,Long> consumerGroupOffset = new HashMap<>();
 		try {
@@ -69,4 +70,3 @@ public class OffsetSink {
 		return consumerGroupOffset;
 	}
 }
-

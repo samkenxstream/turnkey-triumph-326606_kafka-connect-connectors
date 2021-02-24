@@ -1,5 +1,6 @@
 package com.instaclustr.kafka.connect.s3.source;
 
+import com.amazonaws.AmazonClientException;
 import com.google.common.util.concurrent.SimpleTimeLimiter;
 import com.google.common.util.concurrent.TimeLimiter;
 import com.instaclustr.kafka.connect.s3.AwsConnectorStringFormats;

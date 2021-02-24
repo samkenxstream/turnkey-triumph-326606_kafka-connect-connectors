@@ -38,7 +38,7 @@ public class AwsConnectorStringFormats {
                 AwsConnectorStringFormats.convertLongIntoLexySortableString(topicPartitionBuffer.getStartOffset()),
                 AwsConnectorStringFormats.convertLongIntoLexySortableString(topicPartitionBuffer.getEndOffset()));
     }
-    
+
     public static String topicPartitionOffSetStorageName(String keyPrefix, TopicPartition topicPartition, String filename) {
         return String.format(AwsConnectorStringFormats.S3_OBJECT_OFFSET_KEY_FORMAT,
                 keyPrefix,

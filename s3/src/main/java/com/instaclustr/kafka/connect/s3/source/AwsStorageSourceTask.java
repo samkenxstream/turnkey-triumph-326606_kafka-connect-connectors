@@ -14,6 +14,7 @@ import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -33,7 +34,7 @@ public class AwsStorageSourceTask extends SourceTask {
     private long lastPausedQueueScanTimeStamp;
     private RateLimiter pollRecordRateLimiter;
     private HashMap<String, Long> topicPartitionRestoredRecords = new HashMap<>();
-    private HashMap<String, Long> topicPartitionBeginingOffset = new HashMap<>();
+    private HashMap<String, Long> topicPartitionBeginningOffset = new HashMap<>();
     private LinkedList<SourceRecord> recordsToBeDelivered;
     private OffsetSource offsetSource;
 
@@ -90,7 +91,7 @@ public class AwsStorageSourceTask extends SourceTask {
          });
 	}
 
-	public Map<String, Map<String, Object>> loadSourceConnectorTopicPartitionOffsets(List<String> topicPartitions) {
+    public Map<String, Map<String, Object>> loadSourceConnectorTopicPartitionOffsets(List<String> topicPartitions) {
         Map<String, Map<String, Object>> topicPartitionOffsets = new HashMap<>();
         String targetTopicPrefix = this.configMap.getOrDefault(AwsStorageSourceConnector.SINK_TOPIC_PREFIX, "");
         List<Map<String, String>> offsetPartitions = topicPartitions.stream().map(
@@ -133,7 +134,7 @@ public class AwsStorageSourceTask extends SourceTask {
                     if (record != null) {
                     	topicPartitionRestoredRecords.put(topicPartition,topicPartitionRestoredRecords.get(topicPartition)+1);
                         long recordOffset = (Long) record.sourceOffset().get("lastReadOffset");
-                        topicPartitionBeginingOffset.putIfAbsent(topicPartition, recordOffset);
+                        topicPartitionBeginningOffset.putIfAbsent(topicPartition, recordOffset);
                         recordsToBeDelivered.add(record);
                         lastReadOffset = recordOffset;
                         notComplete = recordOffset != topicPartitionSegmentParser.getEndOffset();
@@ -145,7 +146,7 @@ public class AwsStorageSourceTask extends SourceTask {
                     }
                 } while (notComplete);
                 log.debug("commitRecord topicPartition: {} ,records:  {}",topicPartition,topicPartitionRestoredRecords.get(topicPartition));
-                offsetSource.syncGroupForOffset(new TopicPartition(topicPartitionSegmentParser.getTopic(),topicPartitionSegmentParser.getPartition()), awsSourceReader.getTopicOffset(topicPartition),topicPartitionBeginingOffset.get(topicPartition), topicPartitionRestoredRecords.get(topicPartition));
+                offsetSource.syncGroupForOffset(new TopicPartition(topicPartitionSegmentParser.getTopic(),topicPartitionSegmentParser.getPartition()), awsSourceReader.getTopicOffset(topicPartition),topicPartitionBeginningOffset.get(topicPartition), topicPartitionRestoredRecords.get(topicPartition));
                 topicPartitionSegmentParser.closeResources();
             } catch (InterruptedException e) {
                 log.info("Thread interrupted in poll. Shutting down", e);
@@ -174,6 +175,7 @@ public class AwsStorageSourceTask extends SourceTask {
                 throw new ConnectException(e);
             }
         }
+
         ArrayList<SourceRecord> sourceRecords = new ArrayList<>();
         while(!this.recordsToBeDelivered.isEmpty() && this.pollRecordRateLimiter.tryAcquire(this.pollSleepIntervalMs,TimeUnit.MILLISECONDS)){
             sourceRecords.add(this.recordsToBeDelivered.poll());
@@ -183,7 +185,6 @@ public class AwsStorageSourceTask extends SourceTask {
 
     @Override
     public void stop() {
-    	Thread.interrupted();
         log.info("Task shutdown success");
     }
 

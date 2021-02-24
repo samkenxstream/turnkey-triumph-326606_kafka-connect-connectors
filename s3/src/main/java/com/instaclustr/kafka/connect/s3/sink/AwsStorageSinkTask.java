@@ -67,7 +67,7 @@ public class AwsStorageSinkTask extends SinkTask {
             if (latestBuffer.getStartOffset() > -1) sinkWriter.writeDataSegment(latestBuffer);
             TopicPartitionBuffer newBuffer = new TopicPartitionBuffer(topicPartition);
             topicPartitionBuffers.put(topicPartition, newBuffer);
-            writeCounsumerOffset(topicPartition);
+            writeConsumerOffset(topicPartition);
             // Further MaxBufferSizeExceededExceptions will be unhandled. This indicates a record too big even by itself
             newBuffer.putRecord(record);
         }
@@ -108,7 +108,7 @@ public class AwsStorageSinkTask extends SinkTask {
                 final TopicPartitionBuffer topicPartitionBuffer = topicPartitionBuffers.get(topicPartition);
                 sinkWriter.writeDataSegment(topicPartitionBuffer);
                 topicPartitionBuffers.put(topicPartition, new TopicPartitionBuffer(topicPartition));
-                writeCounsumerOffset(topicPartition);
+                writeConsumerOffset(topicPartition);
                 if (logger.isDebugEnabled()) {
                     logger.debug("actually flushing: {}, {}, {}-{}", topicPartition.topic(), topicPartition.partition(), topicPartitionBuffer.getStartOffset(), topicPartitionBuffer.getEndOffset());
                 }
@@ -137,7 +137,7 @@ public class AwsStorageSinkTask extends SinkTask {
             try {
                 topicPartitionBuffers.putIfAbsent(tp, new TopicPartitionBuffer(tp.topic(), tp.partition()));
                 topicPartitionTotalRecords.putIfAbsent(tp, 0L);
-                writeCounsumerOffset(tp);
+                writeConsumerOffset(tp);
             } catch (IOException e) {
                 // We can't handle this, need to wrap in a runtime exception since the open call doesn't allow checked exceptions
                 throw new ConnectException(e);
@@ -154,7 +154,7 @@ public class AwsStorageSinkTask extends SinkTask {
         });
     }
     
-   private void writeCounsumerOffset(TopicPartition topicPartition) {
+   private void writeConsumerOffset(TopicPartition topicPartition) {
 	   try {	
 	    
 	    	ObjectMapper mapperObj = new ObjectMapper();

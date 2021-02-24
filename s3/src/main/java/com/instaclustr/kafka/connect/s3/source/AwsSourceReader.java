@@ -110,14 +110,13 @@ public class AwsSourceReader {
 				Map<String,Long> consumerOffset =  objectMapper.readValue(s3ObjectOffset.getObjectContent(), typeRef);
 				topicPartitionConsumerOffset.putIfAbsent(topicPartitionOffsetEntry.getKey(),consumerOffset);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				log.error(e.getMessage());
+                log.error(e.getMessage());
 			}
             awsReadPositions.put(topicPartitionOffsetEntry.getKey(), position);
         }
         return awsReadPositions;
     }
-    
+ 
     public Map<String,Long> getTopicOffset(String topicpar) {
     	return topicPartitionConsumerOffset.get(topicpar);
 	}
@@ -162,4 +161,3 @@ public class AwsSourceReader {
         log.debug("Current paused position size : {}",this.pausedReadPositions.size());
     }
 }
-
