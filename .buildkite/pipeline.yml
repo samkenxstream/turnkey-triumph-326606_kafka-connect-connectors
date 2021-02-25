@@ -17,7 +17,7 @@ steps:
       AWS_ACCESS_KEY_ID: "$REDAMA_AWS_ACCESS_KEY_ID"
       AWS_SECRET_ACCESS_KEY: "$REDAMA_AWS_SECRET_ACCESS_KEY"
     timeout_in_minutes: 5
-    branches: 'master'
+    branches: 'DATA-209-Backup-consumer-group-offset'
     plugins:
       docker-compose#v3.2.0:
         run: maven-builder
