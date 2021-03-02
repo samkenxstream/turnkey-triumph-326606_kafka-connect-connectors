@@ -99,7 +99,7 @@ public class AwsStorageSourceTask extends SourceTask {
         return topicPartitionOffsets;
     }
     
-//	The consumer group laging far behind the restore begging offset. The set 0L to consumer groups to start from beggining. 
+//	Initialize all consumer group Offset to 0L
     
     private void setInitialConsumerGroup(List<String> topicPartitionList) {
     	topicPartitionList.forEach(tp->{
