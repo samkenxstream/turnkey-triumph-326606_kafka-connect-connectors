@@ -27,12 +27,11 @@ public class OffsetSink {
 	}
 
 	public void syncConsumerGroups() {
-		try {
-			consumerGroups = adminClient.listConsumerGroups().all().get().stream().map(ConsumerGroupListing::groupId)
-					.collect(Collectors.toList());
-		} catch (InterruptedException | ExecutionException e) {
-			throw new RetriableException(e);
-		}
+        try {
+            consumerGroups = adminClient.listConsumerGroups().all().get().stream().map(ConsumerGroupListing::groupId).collect(Collectors.toList());
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RetriableException(e);
+        }
 	}
 
 	public Map<String, Long> syncOffsets(TopicPartition topicPartition) throws IOException {
@@ -40,13 +39,13 @@ public class OffsetSink {
 		Map<String, Long> consumerGroupOffset = new HashMap<>();
 		for (String consumerGroup : consumerGroups) {
 			try {
-				consumerGroupOffset.putAll(syncOffsetsForGroup(consumerGroup, topicPartition));
+			    consumerGroupOffset.putAll(syncOffsetsForGroup(consumerGroup, topicPartition));
 			} catch (IOException e) {
-				error = true;
+			    error = true;
 			}
 		}
 		if (error) {
-			throw new IOException("syncOffsets() threw an IOException");
+		    throw new IOException("syncOffsets() threw an IOException");
 		}
 		return consumerGroupOffset;
 	}

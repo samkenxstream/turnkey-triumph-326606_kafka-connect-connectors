@@ -154,7 +154,7 @@ public class AwsStorageSinkTask extends SinkTask {
         });
     }
     
-   private void writeConsumerOffset(TopicPartition topicPartition) {
+    private void writeConsumerOffset(TopicPartition topicPartition) {
         try {
 
             ObjectMapper mapperObj = new ObjectMapper();
@@ -167,15 +167,14 @@ public class AwsStorageSinkTask extends SinkTask {
         } catch (IOException | InterruptedException ex) {
             throw new ConnectException(ex);
         }
-   }
-  
-   private Properties getAdminClientConfig() {
+    }
+    private Properties getAdminClientConfig() {
         Properties adminProps = new Properties();
-	    try {
-			adminProps.load(new FileInputStream(AwsStorageConnectorCommonConfig.CONNECT_DISTRIBUTED_PROPERTIES));
-		} catch (IOException  e) {
-			throw new ConnectException(e);
+        try {
+            adminProps.load(new FileInputStream(AwsStorageConnectorCommonConfig.CONNECT_DISTRIBUTED_PROPERTIES));
+        } catch (IOException  e) {
+            throw new ConnectException(e);
 		} 
-	    return adminProps;
+        return adminProps;
    	}
 }

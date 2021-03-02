@@ -38,7 +38,7 @@ public class AwsStorageSinkWriter {
     }
     
     public void writeOffsetData(TopicPartition  topicPartition, String offsetData, String filename) throws IOException, InterruptedException {
-    	InputStream targetStream = new ByteArrayInputStream(offsetData.getBytes());
+        InputStream targetStream = new ByteArrayInputStream(offsetData.getBytes());
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(offsetData.getBytes().length);
         PutObjectRequest request = new PutObjectRequest(bucketName
