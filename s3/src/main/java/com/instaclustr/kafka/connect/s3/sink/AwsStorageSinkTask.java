@@ -101,7 +101,7 @@ public class AwsStorageSinkTask extends SinkTask {
                     entrySet().stream()
                     .filter(entry -> entry.getValue().getStartOffset() > -1)
                     .map(Map.Entry::getKey).collect(Collectors.toList());
-	        if(!buffersToBeFlushed.isEmpty()) {
+	        if (!buffersToBeFlushed.isEmpty()) {
 	        	offsetSink.syncConsumerGroups();
 	        }
             for (TopicPartition topicPartition : buffersToBeFlushed) {
@@ -176,5 +176,5 @@ public class AwsStorageSinkTask extends SinkTask {
             throw new ConnectException(e);
         }
         return adminProps;
-   	}
+    }
 }
