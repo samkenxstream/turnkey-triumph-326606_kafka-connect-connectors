@@ -107,11 +107,11 @@ public class AwsSourceReader {
             S3Object s3ObjectOffset = s3Client.getObject(getOffsetObjectRequest);
             ObjectMapper objectMapper = new ObjectMapper();
             try {
-				Map<String,Long> consumerOffset =  objectMapper.readValue(s3ObjectOffset.getObjectContent(), typeRef);
-				topicPartitionConsumerOffset.putIfAbsent(topicPartitionOffsetEntry.getKey(),consumerOffset);
-			} catch (IOException e) {
+                Map<String,Long> consumerOffset =  objectMapper.readValue(s3ObjectOffset.getObjectContent(), typeRef);
+                topicPartitionConsumerOffset.putIfAbsent(topicPartitionOffsetEntry.getKey(),consumerOffset);
+            } catch (IOException e) {
                 log.error(String.format("Consumer group offset not in a valid format. %s",e.getMessage()));
-			}            
+            }
         }
         return awsReadPositions;
     }
