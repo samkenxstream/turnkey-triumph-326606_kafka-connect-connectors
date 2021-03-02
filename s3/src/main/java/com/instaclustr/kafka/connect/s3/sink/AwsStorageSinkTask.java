@@ -168,6 +168,7 @@ public class AwsStorageSinkTask extends SinkTask {
             throw new ConnectException(ex);
         }
     }
+
     private Properties getAdminClientConfig() {
         Properties adminProps = new Properties();
         try {
