@@ -58,7 +58,7 @@ public class OffsetSource {
 		Properties groupConsumerConfig = consumerConfig;
 
 		Map<String,Long> consumerGroupsResult = consumerGroups.entrySet().stream().filter(map -> map.getValue().longValue() > 
-				lastReadOffset && !map.getKey().contains("sink_tp_totalrecords")) 
+				lastReadOffset && !map.getKey().contains(AwsStorageConnectorCommonConfig.SINK_TP_TOTALRECORDS)) 
 		        .collect(Collectors.toMap(map -> map.getKey(), map -> map.getValue())); 
 
 		for (Map.Entry<String, Long> entry : consumerGroupsResult.entrySet()) {

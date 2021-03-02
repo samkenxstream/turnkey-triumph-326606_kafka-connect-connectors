@@ -52,19 +52,15 @@ public class OffsetSink {
 	}
 	// Getting all the consumer group offsets for TopicPartition
 
-	private Map<String, Long> syncOffsetsForGroup(String consumerGroup, TopicPartition topicPartition)
-			throws IOException {
+	private Map<String, Long> syncOffsetsForGroup(String consumerGroup, TopicPartition topicPartition) throws IOException {
 		Iterator<Entry<TopicPartition, OffsetAndMetadata>> topicOffsetsAndMetadata;
 		Map<String, Long> consumerGroupOffset = new HashMap<>();
 		try {
-			topicOffsetsAndMetadata = adminClient.listConsumerGroupOffsets(consumerGroup)
-					.partitionsToOffsetAndMetadata().get().entrySet().stream()
-					.filter(tp -> tp.getKey().equals(topicPartition)).iterator();
+		    topicOffsetsAndMetadata = adminClient.listConsumerGroupOffsets(consumerGroup).partitionsToOffsetAndMetadata().get().entrySet().stream().filter(tp -> tp.getKey().equals(topicPartition)).iterator();
 			if (topicOffsetsAndMetadata.hasNext()) {
 				Entry<TopicPartition, OffsetAndMetadata> entry = topicOffsetsAndMetadata.next();
 				OffsetAndMetadata offsetAndMetadata = entry.getValue();
-				log.debug("topic {} partitons {} consumerGroup {} offset {}", topicPartition.topic(),
-						topicPartition.partition(), consumerGroup, offsetAndMetadata.offset());
+				log.debug("topic {} partitons {} consumerGroup {} offset {}", topicPartition.topic(),topicPartition.partition(), consumerGroup, offsetAndMetadata.offset());
 				consumerGroupOffset.put(consumerGroup, offsetAndMetadata.offset());
 			}
 		} catch (InterruptedException | ExecutionException e) {

@@ -160,10 +160,10 @@ public class AwsStorageSinkTask extends SinkTask {
             ObjectMapper mapperObj = new ObjectMapper();
             Map<String,Long> consumer_offset = offsetSink.syncOffsets(topicPartition);
             // populating total records for TopicPartition. It can be used for further analysis. 
-            consumer_offset.put("sink_tp_totalrecords", topicPartitionTotalRecords.get(topicPartition));
+            consumer_offset.put(AwsStorageConnectorCommonConfig.SINK_TP_TOTALRECORDS, topicPartitionTotalRecords.get(topicPartition));
             String jsonconsumeroffset = mapperObj.writeValueAsString(consumer_offset);
             logger.debug("consumers offset::{} and TopicPartition:: {}  ",jsonconsumeroffset,topicPartition);
-            sinkWriter.writeOffsetData(topicPartition, jsonconsumeroffset, "consumer_offsets");
+            sinkWriter.writeOffsetData(topicPartition, jsonconsumeroffset, "consumers_offset");
         } catch (IOException | InterruptedException ex) {
             throw new ConnectException(ex);
         }

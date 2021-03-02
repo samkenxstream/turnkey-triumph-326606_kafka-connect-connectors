@@ -103,7 +103,7 @@ public class AwsSourceReader {
             }
             AwsReadPosition position = new AwsReadPosition(s3Objects, lastRecordedOffset);
             awsReadPositions.put(topicPartitionOffsetEntry.getKey(), position);
-            GetObjectRequest getOffsetObjectRequest = new GetObjectRequest(awsBucket, awsS3Prefix+"offset/consumer_offsets");
+            GetObjectRequest getOffsetObjectRequest = new GetObjectRequest(awsBucket, awsS3Prefix+"offset/consumers_offset");
             S3Object s3ObjectOffset = s3Client.getObject(getOffsetObjectRequest);
             ObjectMapper objectMapper = new ObjectMapper();
             try {
