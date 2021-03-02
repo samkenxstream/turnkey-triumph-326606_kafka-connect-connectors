@@ -105,7 +105,7 @@ public class AwsStorageSourceTask extends SourceTask {
     	topicPartitionList.forEach(tp->{
     		log.debug("setInitialConsumerGroup {}",tp);
          	 Matcher fileNameMatcher = Pattern.compile("^.*?([^/]+)/([0-9]+)").matcher(tp);
-         	 if(fileNameMatcher.matches()) {
+         	 if (fileNameMatcher.matches()) {
          		offsetSource.syncGroupForOffset(new TopicPartition(fileNameMatcher.group(1),Integer.parseInt(fileNameMatcher.group(2))),awsSourceReader.getTopicOffset(tp),0L,0L);	 
          	 }
          });
@@ -181,7 +181,6 @@ public class AwsStorageSourceTask extends SourceTask {
         }
         return sourceRecords;
     }
-
 
     @Override
     public void stop() {
