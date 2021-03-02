@@ -155,27 +155,27 @@ public class AwsStorageSinkTask extends SinkTask {
     }
     
    private void writeConsumerOffset(TopicPartition topicPartition) {
-	   try {	
-	    
-	    	ObjectMapper mapperObj = new ObjectMapper();
-	    	Map<String,Long> consumer_offset = offsetSink.syncOffsets(topicPartition);
-	    	// populating total records for TopicPartition. It can be used for further analysis. 
-	    	consumer_offset.put("sink_tp_totalrecords", topicPartitionTotalRecords.get(topicPartition));
-	    	String jsonconsumeroffset = mapperObj.writeValueAsString(consumer_offset);
-			logger.debug("jsonconsumeroffset::{} TopicPartition:: {}  ",jsonconsumeroffset,topicPartition);
-			sinkWriter.writeOffsetData(topicPartition, jsonconsumeroffset, "consumer_offsets");
-	    } catch (IOException | InterruptedException ex) { 
-	        throw new ConnectException(ex);
-		}
+        try {
+
+            ObjectMapper mapperObj = new ObjectMapper();
+            Map<String,Long> consumer_offset = offsetSink.syncOffsets(topicPartition);
+            // populating total records for TopicPartition. It can be used for further analysis. 
+            consumer_offset.put("sink_tp_totalrecords", topicPartitionTotalRecords.get(topicPartition));
+            String jsonconsumeroffset = mapperObj.writeValueAsString(consumer_offset);
+            logger.debug("consumers offset::{} and TopicPartition:: {}  ",jsonconsumeroffset,topicPartition);
+            sinkWriter.writeOffsetData(topicPartition, jsonconsumeroffset, "consumer_offsets");
+        } catch (IOException | InterruptedException ex) {
+            throw new ConnectException(ex);
+        }
    }
   
    private Properties getAdminClientConfig() {
-	   Properties adminProps = new Properties(); 
-	  try {
+        Properties adminProps = new Properties();
+	    try {
 			adminProps.load(new FileInputStream(AwsStorageConnectorCommonConfig.CONNECT_DISTRIBUTED_PROPERTIES));
-		  } catch (IOException  e) {
+		} catch (IOException  e) {
 			throw new ConnectException(e);
-		  } 
-	  return adminProps;
+		} 
+	    return adminProps;
    	}
 }

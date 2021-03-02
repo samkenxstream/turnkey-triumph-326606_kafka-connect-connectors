@@ -35,7 +35,6 @@ public class AwsStorageSourceTask extends SourceTask {
     private long lastPausedQueueScanTimeStamp;
     private RateLimiter pollRecordRateLimiter;
     private HashMap<String, Long> topicPartitionRestoredRecords = new HashMap<>();
-    private HashMap<String, Long> topicPartitionBeginningOffset = new HashMap<>();
     private LinkedList<SourceRecord> recordsToBeDelivered;
     private OffsetSource offsetSource;
 
@@ -99,7 +98,9 @@ public class AwsStorageSourceTask extends SourceTask {
         });
         return topicPartitionOffsets;
     }
-
+    
+//	The consumer group laging far behind the restore begging offset. The set 0L to consumer groups to start from beggining. 
+    
     private void setInitialConsumerGroup(List<String> topicPartitionList) {
     	topicPartitionList.forEach(tp->{
     		log.debug("setInitialConsumerGroup {}",tp);
@@ -125,16 +126,17 @@ public class AwsStorageSourceTask extends SourceTask {
                     return null;
                 }
                 topicPartition = String.format("%s/%d", topicPartitionSegmentParser.getTopic(), topicPartitionSegmentParser.getPartition());
-                topicPartitionRestoredRecords.putIfAbsent(topicPartition, 0L);
+                topicPartitionRestoredRecords.putIfAbsent(topicPartition, 1L);
                 long lastReadOffset = awsSourceReader.getLastReadOffset(topicPartition);
                 boolean notComplete;
                 do {
                     SourceRecord record = topicPartitionSegmentParser.getNextRecord(10L, TimeUnit.SECONDS);
                     if (record != null) {
-                    	topicPartitionRestoredRecords.put(topicPartition,topicPartitionRestoredRecords.get(topicPartition)+1);
+                    	
                         long recordOffset = (Long) record.sourceOffset().get("lastReadOffset");
-                        topicPartitionBeginningOffset.putIfAbsent(topicPartition, recordOffset);
                         recordsToBeDelivered.add(record);
+                        offsetSource.syncGroupForOffset(new TopicPartition(topicPartitionSegmentParser.getTopic(),topicPartitionSegmentParser.getPartition()), awsSourceReader.getTopicOffset(topicPartition),recordOffset, topicPartitionRestoredRecords.get(topicPartition));
+                        topicPartitionRestoredRecords.put(topicPartition,topicPartitionRestoredRecords.get(topicPartition)+1);
                         lastReadOffset = recordOffset;
                         notComplete = recordOffset != topicPartitionSegmentParser.getEndOffset();
                     } else {
@@ -144,7 +146,6 @@ public class AwsStorageSourceTask extends SourceTask {
                                 lastReadOffset, topicPartitionSegmentParser.getEndOffset()));
                     }
                 } while (notComplete);
-                offsetSource.syncGroupForOffset(new TopicPartition(topicPartitionSegmentParser.getTopic(),topicPartitionSegmentParser.getPartition()), awsSourceReader.getTopicOffset(topicPartition),topicPartitionBeginningOffset.get(topicPartition), topicPartitionRestoredRecords.get(topicPartition));
                 topicPartitionSegmentParser.closeResources();
             } catch (InterruptedException e) {
                 log.info("Thread interrupted in poll. Shutting down", e);
