@@ -1,1 +1,0 @@
-{"schema":{"type":"struct","fields":[{"type":"string","optional":false,"name":"io.debezium.data.Uuid","version":1,"field":"id"}],"optional":false,"name":"crowdcontrol.public.users.Key"},"payload":{"id":"29a03da0-42bc-48ca-bc11-e96ef7b83548"}}	
