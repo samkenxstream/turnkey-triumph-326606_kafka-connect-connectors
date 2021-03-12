@@ -31,11 +31,12 @@ The restore task, splits the incoming data in configurable batches and performs 
 
 NOTE : When reading data from an S3 bucket the source connector expects to have a kafka topic with the same name and partitions in the target kafka cluster.
 
-Second, Offset transformation logic given below. 
-    1) Initialize all consumer offset to 0
-    2) Process only consumer group offset > lastReadOffset
-    3) consumerGroupOffset = offset > totalRecords ? totalRecords : offset
-`syncGroupForOffset` this function is called for every record that is written to Kafka. calulate `consumerGroupOffset` and commit this offset for the appropriate consumer group.
+Second, Offset transformation logic given below.
+
+    * Initialize all consumer offset to 0
+    * Process only consumer group offset > lastReadOffset    
+    * consumerGroupOffset = offset > totalRecords ? totalRecords : offset
+     `syncGroupForOffset` this function is called for every record that is written to Kafka. calulate `consumerGroupOffset` and commit this offset for the     appropriate consumer group.
 
 ### Offset
 
