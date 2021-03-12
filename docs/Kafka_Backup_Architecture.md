@@ -33,10 +33,10 @@ NOTE : When reading data from an S3 bucket the source connector expects to have 
 
 Second, Offset transformation logic given below.
 
-    * Initialize all consumer offset to 0
-    * Process only consumer group offset > lastReadOffset    
-    * consumerGroupOffset = offset > totalRecords ? totalRecords : offset
-     `syncGroupForOffset` this function is called for every record that is written to Kafka. calulate `consumerGroupOffset` and commit this offset for the     appropriate consumer group.
+* Initialize all consumer offset to 0
+* Process only consumer group offset > lastReadOffset    
+* consumerGroupOffset = offset > totalRecords ? totalRecords : offset
+   `syncGroupForOffset` this function is called for every record that is written to Kafka.Calulate `consumerGroupOffset` and commit this offset for the     appropriate consumer group.
 
 ### Offset
 
