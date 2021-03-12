@@ -20,7 +20,7 @@ The object key would be defined as below
 
 ```user-defined-prefix/<topic>/<partition>/offset/consumers_offset ```
 
-Note, consumers_offset always latest with all consumer group offset. [below] (### Offset) is sample exmple.
+Note, consumers_offset always latest with all consumer group offset. [below] (#offset) is sample exmple.
 
 ### Source Task
 
