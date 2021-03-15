@@ -2,32 +2,35 @@
 
 ## Connectors
 
-Kafka Backup consists of two Kafka Connect Connectors: A sink connector responsible for the backup task and a source connector responsible for the restoration.
+Kafka Backup consists of two Kafka Connect Connectors: 
+* sink connector for the backup task 
+* source connector for the restore task
 
-The Kafka Connect Architecture distinguishes between Connectors and Tasks: 
-Tasks perform the actual work and the Connector acts as a preparation and cleanup stage and configures the actual Tasks. For performance reasons, Kafka Connect supports multiple tasks per connector and distributes them across multiple Kafka Connect workers if available.
+The Kafka Connect Architecture distinguishes between Connectors and Tasks:- 
+Tasks perform the actual work and the Connector acts as a preparation and cleanup stage and configures the actual tasks. For performance reasons, Kafka Connect supports multiple tasks per connector and distributes them across multiple Kafka Connect workers if available.
 
 ### Sink Task
 
-Sink Task extends the Kafka Connect `SinkTask`. There are two jobs, the sink task is responsible for: 
+Sink task extends the Kafka Connect `SinkTask`.sink task is responsible for the following jobs:-
 
-First, every time, Kafka Connect delivers new Records to be backed up, the task write files to the appropriate topic and partition folder in S3. The object key would be defined as below
+Every time,Kafka Connect delivers new Records to be backed up, the task write files to the appropriate topic and partition folder in S3. The object key defined as:
 
 ```user-defined-prefix/<topic>/<partition>/<start offset>-<end offset> ```
 
-Second, the Sink Task is also responsible for backing up the consumer group offsets. Ideally this job would be scheduled independently of the delivery of new messages from Kafka Connect. Currently the offsets are synchronized every time, new records are pushed to Kafka Connect. Note, that the sync of consumer offsets is not supported out of the box in Kafka Connect. Thus we need to create our own `AdminClient` that is responsible for fetching the offsets for all consumer groups.
-The object key would be defined as below
+The Sink task is responsible for backing up the consumer group offsets. Ideally this job will be scheduled independent of the delivery of new messages from Kafka Connect. Currently the offsets are synchronized every time, new records are pushed to Kafka Connect. 
+Note:- The sync of consumer offsets is not supported out of the box in Kafka Connect. Thus we need to create our own `AdminClient` that is responsible for fetching the offsets for all consumer groups.
+The object key will defined as:
 
 ```user-defined-prefix/<topic>/<partition>/offset/consumers_offset ```
 
-Note, consumers_offset always latest with all consumer group offset. [below](#offset) is sample exmple.
+Note:- consumers_offset always latest with all consumer group offset.[below](#offset) is sample exmple is:
 
 ### Source Task
 
-Source Task extends the Kafka Connect `SourceTask`. There are two jobs, the source task is responsible for: 
+Source task extends the Kafka Connect `SourceTask`. The source task is responsible for the following jobs:
 
-First, reading data from an S3 bucket and write back into kafka topics. 
-The restore task, splits the incoming data in configurable batches and performs the restore for each batch one after another. As there is no way to gracefully shut down Kafka Connect from the inside, the Source Task logs a completion message every few seconds after all data is restored from the files.
+Reading data from an S3 bucket and write back into Kafka topics. 
+The restore task, splits the incoming data in configurable batches and performs the restore for each batch one after another.Since there is no way to gracefully shut down Kafka Connect from the inside, the Source task logs a completion message every few seconds after all the data is restored from the files.
 
 NOTE : When reading data from an S3 bucket the source connector expects to have a kafka topic with the same name and partitions in the target kafka cluster.
 
