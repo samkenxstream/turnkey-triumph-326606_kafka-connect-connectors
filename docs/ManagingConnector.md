@@ -49,7 +49,7 @@ curl -X GET -H "Accept: application/json" http://127.0.0.1:8083/connectors
 Create a new connector (connector object is returned):
 
 ```sh
-curl http://kafka-connect-evangelia-backup:8083/connectors -X POST -H 'Content-Type: application/json' -d '{
+curl http://127.0.0.1:8083/connectors -X POST -H 'Content-Type: application/json' -d '{
    "name":"kafka-backup-20210317101010",
    "config":{
       "connector.class":"com.instaclustr.kafka.connect.s3.sink.AwsStorageSinkConnector",
@@ -94,5 +94,6 @@ curl -X DELETE http://127.0.0.1:8083/connectors/kafka-backup-20210317101010
 ```
 
 For more considerations on using Kafka Connect REST API refer to
-[CONFLUENT_REST_API](https://docs.confluent.io/current/connect/references/restapi.html)
+[CONFLUENT_REST_API](https://docs.confluent.io/current/connect/references/restapi.html) and 
+[APACHE_REST_API](https://kafka.apache.org/documentation/#connect_rest)
 
