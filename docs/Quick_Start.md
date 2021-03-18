@@ -4,6 +4,7 @@ Kafka Backup is a tool to back up and restore your Kafka data including consumer
 it correctly.
 
 It is designed as two connectors for Kafka Connect: 
+
 * Sink connector (backing data and consumers group offset) 
 * Source connector (restoring data and consumers group offset) 
 
