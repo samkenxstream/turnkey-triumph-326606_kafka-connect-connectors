@@ -35,11 +35,13 @@ The following are required to run the Kafka Connect
 ```sh
 ./setup.sh
 ```
-* Start Kafka Backup,Consumers, scenario-1 data ingestion and consumer group offsets to verify from backup and restore. 
+* Start Kafka connect backup,consumers,scenario-1 data ingestion and export consumer group offset details in `bin/offsetdetails` to verify from backup and restore.By executing `scenario_1.sh`
 ```sh
 shellscripts/scenario_1.sh
 ```
-* Verify scenario-1 kafka topic data and offset backup in S3(`$bucket/databackup/datetime`). Once verified,replace tumbstone message with value by executing the scenario-2.
+* Verify scenario-1 kafka topic data and offset backup in S3(`$bucket/databackup/datetime`).
+
+* Start Kafka connect backup,consumers,scenario-2 data. Replace tumbstone message with value.By executing `scenario_2.sh`
 
 ```sh
 shellscripts/scenario_2.sh
