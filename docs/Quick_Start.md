@@ -46,13 +46,13 @@ shellscripts/scenario_2.sh
 ```
 * Verify scenario-2 kafka topic data and offset backup in S3(`$bucket/databackup/datetime`). 
 
-* Restore data scenario 1 & 2 by providing one by one S3 folder.
+* Restore data and consumer group offset for scenario 1 & 2 by providing S3 prefix `databackup/datetime`
 ```sh
-shellscripts/restore-standalone.sh {Foldername `databackup/datetime`}
+shellscripts/restore-standalone.sh `S3-Prefix`
 ```
 * Verify data is copied from S3 folder to restored kafka topics in kafka-restore cluster. 
 
-* Verify consumer group offset backup and tranlated offset in `bin/offsetdetails` folder and restored cluster. 
+* Verify consumer group offset backup and tranlated offset in `bin/offsetdetails` folder and kafka restored cluster. 
 
 ## More Documentation
 
