@@ -1,0 +1,5 @@
+TOPIC	GROUP	CURRENT-OFFSET	LOG-END-OFFSET	LAG
+crowdcontrol_development.public.identities	identitiesgroup2	20	20	0
+crowdcontrol_development.public.identities	identitiesgroup1	10	20	10
+crowdcontrol_development.public.users	usergroup1	10	20	10
+crowdcontrol_development.public.users	usergroup2	20	20	0
