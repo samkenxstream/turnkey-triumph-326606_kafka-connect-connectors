@@ -53,6 +53,6 @@ shellscripts/restore-standalone.sh {Foldername `databackup/datetime`}
 
 ## More Documentation
 
-* [ManagingConnector](./docs/ManagingConnector.md)
-* [Architecture](./docs/Kafka_Backup_Architecture.md)
+* [ManagingConnector](ManagingConnector.md)
+* [Architecture](Kafka_Backup_Architecture.md)
 * [Connector](https://www.instaclustr.com/support/documentation/kafka-connect/pre-built-kafka-connect-plugins/)
