@@ -4,8 +4,8 @@ Kafka Backup is a tool to back up and restore your Kafka data including consumer
 it correctly.
 
 It is designed as two connectors for Kafka Connect: 
-* Sink connector (backing data up) 
-* Source connector (restoring data)
+* Sink connector (backing data and consumers group offset) 
+* Source connector (restoring data and consumers group offset) 
 
 ## Features
 
@@ -30,11 +30,11 @@ The following are required to run the Kafka Connect
 * Copy jar file from `target` to `~/kafka/plugin` using CLI `cp target/kafka-connect-instaclustr-0.1.3-uber.jar ~/kafka/plugins`
 * go to `bin` directory 
 
-## Create and Start Kafka Backup, Kafka Restore Docker alnog with Kafka connect standalone.
+* Create and Start Kafka Backup, Kafka Restore Docker alnog with Kafka connect standalone.
 ```sh
 ./setup.sh
 ```
-## Start Kafka Backup,Consumers,Scnario-1 data set insjection and Export offsets to verify from backup and restore. 
+* Start Kafka Backup,Consumers,Scnario-1 data set insjection and Export offsets to verify from backup and restore. 
 ```sh
 shellscripts/scenario_1.sh
 ```
@@ -46,7 +46,7 @@ shellscripts/scenario_2.sh
 ```
 you can verify scenario-2 kafka topic data and offset backup in S3(`$bucket/databackup/datetime`). 
 
-## Restore data scenario 1 & 2 by providing one by one S3 folder
+* Restore data scenario 1 & 2 by providing one by one S3 folder
 ```sh
 shellscripts/restore-standalone.sh {Foldername `databackup/datetime`}
 ```
