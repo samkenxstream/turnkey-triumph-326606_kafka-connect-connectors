@@ -74,14 +74,14 @@ key.converter=org.apache.kafka.connect.converters.ByteArrayConverter
 
 | Name                        | Required? | Recommended Value                                    | Comment                                                                                                |
 |-----------------------------|-----------|------------------------------------------------------|--------------------------------------------------------------------------------------------------------|
-| `name`                      | ✓         | `backup-sink`                                          | A unique name identifying this connector jobs                                                        |
+| `name`                      | ✓         | `restore-source`                                       | A unique name identifying this connector jobs                                                        |
 | `connector.class`           | ✓         | `com.instaclustr.kafka.connect.s3.sink.AwsStorageSourceConnector`      | Must be this class to use `kafka-connect`                                            |
 | `tasks.max`                 | ✓         | 5                                                    | Number of threads for restore. Set number kafka topic partation                                        |
 | `s3.topics   `              | -         | `.*`                                                  | Specify the required topics to process found in an S3 bucket location                                 |
 | `key.converter`             | ✓         | `org.apache.kafka.connect.converters.ByteArrayConverter` | Must be this class to interpret the data as bytes                                                  |
 | `value.converter`           | ✓         | `org.apache.kafka.connect.converters.ByteArrayConverter` | Must be this class to interpret the data as bytes                                                  |
-| `prefix`                    | ✓         | ``                                                   | The path prefix to the location the s3 objects must be read from                                             |
-| `aws.s3.bucket`             | ✓         | ``                                     |              |     S3 bucket to be written to.                                                                       |
+| `prefix`                    | -         | ``                                                   | The path prefix to the location the s3 objects must be read from                                       |
+| `aws.s3.bucket`             | ✓         | ``                                                   | S3 bucket to be written to                                                                            |
 | `maxRecordsPerSecond`       | -         | ``                                                    | The rate of records being produced to kafka. Will help with tuning it according to the capability of a worker   |
 | `kafka.topicPrefix`         | -         | ``                                                   | Specify a prefix for the kafka topic written to                                                         |
 
