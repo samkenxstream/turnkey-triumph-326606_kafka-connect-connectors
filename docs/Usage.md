@@ -8,7 +8,7 @@ Kafka Connect is shipped only with a small number of connectors. All other conne
 
 See [Build and Run](Quick_Start.md).
 
-### Using curl PROD environment
+### PROD environment using curl
 
 ```sh
 curl -X POST -H "Content-Type: application/json" \
