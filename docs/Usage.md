@@ -30,15 +30,15 @@ key.converter=org.apache.kafka.connect.converters.ByteArrayConverter
 |-----------------------------|-----------|------------------------------------------------------|--------------------------------------------------------------------------------------------------------|
 | `name`                      | ✓         | `backup-sink`                                          | A unique name identifying this connector jobs                                                          |
 | `connector.class`           | ✓         | `com.instaclustr.kafka.connect.s3.sink.AwsStorageSinkConnector`      | Must be this class to use `kafka-connect`                                              |
-| `tasks.max`                 | ✓         | 5                                                    | Number of threads for backups. Set number kafka topic partation                                        |
+| `tasks.max`                 | ✓         | 5                                                    | Number of threads for backup. Set number kafka topic partation                                        |
 | `topics`                    | -         |                                                      | Explicit, comma-separated list of topics to back up                                                    |
 | `topics.regex`              | -         | `.*`                                                  | Topic regex to back up                                                                                |
 | `key.converter`             | ✓         | `org.apache.kafka.connect.converters.ByteArrayConverter` | Must be this class to interpret the data as bytes                                                      |
 | `value.converter`           | ✓         | `org.apache.kafka.connect.converters.ByteArrayConverter` | Must be this class to interpret the data as bytes                                                      |
-| `prefix`                    | ✓         | ``                                                   | The path prefix to the location the s3 objects must be put                                                       |
+| `prefix`                    | -         | ``                                                   | The path prefix to the location the s3 objects must be put                                                       |
 | `aws.s3.bucket`             | ✓         | ``                                     | S3 bucket to be written to.                                  |
 
-NOTE : user either `topics` or `topics.regex`.Sink connector must set any one of option. [ref](https://kafka.apache.org/documentation/#connect_rest)
+NOTE : use either `topics` or `topics.regex`.Sink connector must set any one of option. [ref](https://kafka.apache.org/documentation/#connect_rest)
 
 ### Enable the Backup Sink
 
@@ -48,7 +48,7 @@ Configure the Sink Connector.
 
 ```sh
 curl -X POST -H "Content-Type: application/json" \
-  --data "@path/to/connect-backup-sink.properties"
+  --data "@path/s3-sink.properties"
   http://my.connect.server:8083/connectors
 ```
 
@@ -75,13 +75,12 @@ key.converter=org.apache.kafka.connect.converters.ByteArrayConverter
 | Name                        | Required? | Recommended Value                                    | Comment                                                                                                |
 |-----------------------------|-----------|------------------------------------------------------|--------------------------------------------------------------------------------------------------------|
 | `name`                      | ✓         | `backup-sink`                                          | A unique name identifying this connector jobs                                                        |
-| `connector.class`           | ✓         | `com.instaclustr.kafka.connect.s3.sink.AwsStorageSinkConnector`      | Must be this class to use `kafka-connect`                                              |
-| `tasks.max`                 | ✓         | 5                                                    | Number of threads for backups. Set number kafka topic partation                                        |
-| `topics`                    | -         |                                                      | Explicit, comma-separated list of topics to back up                                                    |
-| `topics.regex`              | -         | `.*`                                                  | Topic regex to back up                                                                                |
+| `connector.class`           | ✓         | `com.instaclustr.kafka.connect.s3.sink.AwsStorageSourceConnector`      | Must be this class to use `kafka-connect`                                            |
+| `tasks.max`                 | ✓         | 5                                                    | Number of threads for restore. Set number kafka topic partation                                        |
+| `s3.topics   `              | -         | `.*`                                                  | Specify the required topics to process found in an S3 bucket location                                 |
 | `key.converter`             | ✓         | `org.apache.kafka.connect.converters.ByteArrayConverter` | Must be this class to interpret the data as bytes                                                  |
 | `value.converter`           | ✓         | `org.apache.kafka.connect.converters.ByteArrayConverter` | Must be this class to interpret the data as bytes                                                  |
-| `prefix`                    | ✓         | ``                                                   | The path prefix to the location the s3 objects must be put                                             |
+| `prefix`                    | ✓         | ``                                                   | The path prefix to the location the s3 objects must be read from                                             |
 | `aws.s3.bucket`             | ✓         | ``                                     |              |     S3 bucket to be written to.                                                                       |
 | `maxRecordsPerSecond`       | -         | ``                                                    | The rate of records being produced to kafka. Will help with tuning it according to the capability of a worker   |
 | `kafka.topicPrefix`         | -         | ``                                                   | Specify a prefix for the kafka topic written to                                                         |
