@@ -8,9 +8,17 @@ Kafka Connect is shipped only with a small number of connectors. All other conne
 
 See [Build and Run](Quick_Start.md).
 
+### Using curl PROD environment
+
+```sh
+curl -X POST -H "Content-Type: application/json" \
+  --data "@path/s3-sink.properties"
+  http://connect.server:8083/connectors
+```
+
 ## Backup
 
-Configure a Backup Sink Connector
+Configure a Kafka connect Sink Connector
 (e.g. create a file `s3-sink.properties`):
 
 ```
@@ -40,21 +48,9 @@ key.converter=org.apache.kafka.connect.converters.ByteArrayConverter
 
 NOTE : use either `topics` or `topics.regex`.Sink connector must set any one of option. [ref](https://kafka.apache.org/documentation/#connect_rest)
 
-### Enable the Backup Sink
-
-Configure the Sink Connector.
-
-**Using curl:**
-
-```sh
-curl -X POST -H "Content-Type: application/json" \
-  --data "@path/s3-sink.properties"
-  http://my.connect.server:8083/connectors
-```
-
 ## Restore
 
-Configure a Backup Source Connector
+Configure a Kafka connect Source Connector
 (e.g. create a file `s3-source.properties`):
 
 ```
@@ -84,7 +80,6 @@ key.converter=org.apache.kafka.connect.converters.ByteArrayConverter
 | `aws.s3.bucket`             | ✓         | ``                                                   | S3 bucket to be written to                                                                            |
 | `maxRecordsPerSecond`       | -         | ``                                                    | The rate of records being produced to kafka. Will help with tuning it according to the capability of a worker   |
 | `kafka.topicPrefix`         | -         | ``                                                   | Specify a prefix for the kafka topic written to                                                         |
-
 
 ### Monitor the restore progress
 
