@@ -15,7 +15,7 @@ connector.class=com.instaclustr.kafka.connect.s3.source.AwsStorageSourceConnecto
 tasks.max=2
 aws.region = us-east-1
 topics.regex=.*
-aws.s3.bucket=bugcrowd-msk-development-evangelia-kafka-backup
+aws.s3.bucket=bugcrowd-msk-development-evangelia-backup
 value.converter=org.apache.kafka.connect.converters.ByteArrayConverter
 key.converter=org.apache.kafka.connect.converters.ByteArrayConverter
 EOF
