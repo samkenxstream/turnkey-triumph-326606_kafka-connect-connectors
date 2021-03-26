@@ -25,11 +25,14 @@ steps:
       AWS_SECRET_ACCESS_KEY: "$REDAMA_AWS_SECRET_ACCESS_KEY"
     timeout_in_minutes: 5
     branches: 'master'
+    concurrency: 1
+    concurrency_group: "kafka-connect-connectors/publish-dev"
     plugins:
       docker-compose#v3.2.0:
         run: maven-builder
 
   - block: "Continue"
+    branches: master
 
   - label: ':shipit: Publish Production'
     command: './publish.sh'
@@ -39,6 +42,8 @@ steps:
       AWS_SECRET_ACCESS_KEY: "$PRODUCTION_AWS_SECRET_ACCESS_KEY"
     timeout_in_minutes: 5
     branches: 'master'
+    concurrency: 1
+    concurrency_group: "kafka-connect-connectors/publish-prod"
     plugins:
       docker-compose#v3.2.0:
         run: maven-builder
