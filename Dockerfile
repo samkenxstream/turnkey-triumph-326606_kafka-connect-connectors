@@ -1,9 +1,10 @@
 FROM adoptopenjdk/maven-openjdk11:latest
 
 RUN apt-get update && apt-get install --yes \
-  python-dev \
+  python3-dev \
   unzip
 
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1
 # AWS CLI is used to push the JAR to s3
 RUN curl --silent --output awscli-bundle.zip \
   https://aws-cli.s3.amazonaws.com/awscli-bundle.zip && \
@@ -13,4 +14,3 @@ RUN curl --silent --output awscli-bundle.zip \
 WORKDIR /usr/src/kafka-connect-connectors
 COPY . /usr/src/kafka-connect-connectors
 RUN mvn install package
-

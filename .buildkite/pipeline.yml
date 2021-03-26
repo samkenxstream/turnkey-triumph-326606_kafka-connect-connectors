@@ -10,6 +10,13 @@ steps:
 
   - wait
 
+  - label: ':mvn: Test'
+    command: 'mvn test'
+    timeout_in_minutes: 5
+    plugins:
+      docker-compose#v3.2.0:
+        run: maven-builder
+
   - label: ':shipit: Publish Redama'
     command: './publish.sh'
     env:
@@ -17,7 +24,7 @@ steps:
       AWS_ACCESS_KEY_ID: "$REDAMA_AWS_ACCESS_KEY_ID"
       AWS_SECRET_ACCESS_KEY: "$REDAMA_AWS_SECRET_ACCESS_KEY"
     timeout_in_minutes: 5
-    branches: 'DATA-209-Backup-consumer-group-offset'
+    branches: 'master'
     plugins:
       docker-compose#v3.2.0:
         run: maven-builder
