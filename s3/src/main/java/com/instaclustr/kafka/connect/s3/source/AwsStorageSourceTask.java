@@ -99,16 +99,15 @@ public class AwsStorageSourceTask extends SourceTask {
         return topicPartitionOffsets;
     }
     
-//	Initialize all consumer group Offset to 0L
-    
+    // Initialize all consumer group Offset to 0L
     private void setInitialConsumerGroup(List<String> topicPartitionList) {
-    	topicPartitionList.forEach(tp->{
-    		log.debug("setInitialConsumerGroup {}",tp);
-         	 Matcher fileNameMatcher = Pattern.compile("^.*?([^/]+)/([0-9]+)").matcher(tp);
-         	 if (fileNameMatcher.matches()) {
-         		offsetSource.syncGroupForOffset(new TopicPartition(fileNameMatcher.group(1),Integer.parseInt(fileNameMatcher.group(2))),awsSourceReader.getTopicOffset(tp),0L,0L);	 
-         	 }
-         });
+        topicPartitionList.forEach(tp->{
+            log.debug("setInitialConsumerGroup {}",tp);
+            Matcher fileNameMatcher = Pattern.compile("^.*?([^/]+)/([0-9]+)").matcher(tp);
+            if (fileNameMatcher.matches()) {
+                offsetSource.syncGroupForOffset(new TopicPartition(fileNameMatcher.group(1),Integer.parseInt(fileNameMatcher.group(2))),awsSourceReader.getTopicOffset(tp),0L,0L);
+            }
+        });
     }
 
     @Override
@@ -132,7 +131,6 @@ public class AwsStorageSourceTask extends SourceTask {
                 do {
                     SourceRecord record = topicPartitionSegmentParser.getNextRecord(10L, TimeUnit.SECONDS);
                     if (record != null) {
-                    	
                         long recordOffset = (Long) record.sourceOffset().get("lastReadOffset");
                         recordsToBeDelivered.add(record);
                         offsetSource.syncGroupForOffset(new TopicPartition(topicPartitionSegmentParser.getTopic(),topicPartitionSegmentParser.getPartition()), awsSourceReader.getTopicOffset(topicPartition),recordOffset, topicPartitionRestoredRecords.get(topicPartition));
