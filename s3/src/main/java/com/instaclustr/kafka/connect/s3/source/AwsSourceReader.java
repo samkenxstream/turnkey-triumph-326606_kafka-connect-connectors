@@ -14,6 +14,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.regex.Matcher;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
  * This class handles reading S3Objects for the assigned topic partitions and keeping track of the read position
@@ -33,6 +36,8 @@ public class AwsSourceReader {
     private HashMap<String, AwsReadPosition> topicPartitionReadPositions;
     private static final String MARKER_TEMPLATE = "%s%s-%s";
 
+    private HashMap<String, Map<String,Long>> topicPartitionConsumerOffset = new HashMap<>();
+    private TypeReference<HashMap<String, Long>> typeRef = new TypeReference<HashMap<String, Long>>() {};    
     private static Logger log = LoggerFactory.getLogger(AwsSourceReader.class);
 
     public AwsSourceReader(final AmazonS3 s3Client, final String bucket, final String awsPrefix, String topicPrefix, Map<String, Map<String, Object>> topicPartitionOffsets) {
@@ -98,8 +103,21 @@ public class AwsSourceReader {
             }
             AwsReadPosition position = new AwsReadPosition(s3Objects, lastRecordedOffset);
             awsReadPositions.put(topicPartitionOffsetEntry.getKey(), position);
+            GetObjectRequest getOffsetObjectRequest = new GetObjectRequest(awsBucket, awsS3Prefix+"offset/consumers_offset");
+            S3Object s3ObjectOffset = s3Client.getObject(getOffsetObjectRequest);
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                Map<String,Long> consumerOffset =  objectMapper.readValue(s3ObjectOffset.getObjectContent(), typeRef);
+                topicPartitionConsumerOffset.putIfAbsent(topicPartitionOffsetEntry.getKey(),consumerOffset);
+            } catch (IOException e) {
+                log.error(String.format("Consumer group offset not in a valid format. %s",e.getMessage()));
+            }
         }
         return awsReadPositions;
+    }
+
+    public Map<String,Long> getTopicOffset(String topicPartition) {
+        return topicPartitionConsumerOffset.get(topicPartition);
     }
 
     public void revertAwsReadPositionMarker(String topicPartition) {

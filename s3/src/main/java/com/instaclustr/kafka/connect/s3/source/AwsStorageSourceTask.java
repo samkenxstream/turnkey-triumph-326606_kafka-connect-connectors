@@ -21,6 +21,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
+import org.apache.kafka.common.TopicPartition;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class AwsStorageSourceTask extends SourceTask {
     private static final Logger log = LoggerFactory.getLogger(AwsStorageSourceTask.class);
@@ -31,7 +34,9 @@ public class AwsStorageSourceTask extends SourceTask {
     private AwsSourceReader awsSourceReader;
     private long lastPausedQueueScanTimeStamp;
     private RateLimiter pollRecordRateLimiter;
+    private HashMap<String, Long> topicPartitionRestoredRecords = new HashMap<>();
     private LinkedList<SourceRecord> recordsToBeDelivered;
+    private OffsetSource offsetSource;
 
     public AwsStorageSourceTask() { //do not remove, kafka connect usage
         this.recordsToBeDelivered = new LinkedList<>();
@@ -55,6 +60,7 @@ public class AwsStorageSourceTask extends SourceTask {
     @Override
     public void start(Map<String, String> map) {
         this.configMap = map;
+        this.offsetSource = new OffsetSource();
         this.transferManagerProvider = new TransferManagerProvider(this.configMap);
         String tasksString = map.getOrDefault(AwsStorageSourceConnector.WORKER_TASK_PARTITIONS_ENTRY, "").trim();
         List<String> topicPartitionList = StringUtils.isBlank(tasksString) ? Collections.emptyList() : Arrays.asList(tasksString.split(","));
@@ -69,6 +75,7 @@ public class AwsStorageSourceTask extends SourceTask {
         } else {
             log.info("Assigned topics and partitions : {}", tasksString);
         }
+        setInitialConsumerGroup(topicPartitionList);
         this.pollRecordRateLimiter = RateLimiter.create(Integer.parseInt(this.configMap.getOrDefault(AwsStorageSourceConnector.MAX_RECORDS_PER_SECOND, AwsStorageSourceConnector.MAX_RECORDS_PER_SECOND_DEFAULT)));
         lastPausedQueueScanTimeStamp = System.currentTimeMillis();
     }
@@ -91,6 +98,17 @@ public class AwsStorageSourceTask extends SourceTask {
         });
         return topicPartitionOffsets;
     }
+    
+    // Initialize all consumer group Offset to 0L
+    private void setInitialConsumerGroup(List<String> topicPartitionList) {
+        topicPartitionList.forEach(tp->{
+            log.debug("setInitialConsumerGroup {}",tp);
+            Matcher fileNameMatcher = Pattern.compile("^.*?([^/]+)/([0-9]+)").matcher(tp);
+            if (fileNameMatcher.matches()) {
+                offsetSource.syncGroupForOffset(new TopicPartition(fileNameMatcher.group(1),Integer.parseInt(fileNameMatcher.group(2))),awsSourceReader.getTopicOffset(tp),0L,0L);
+            }
+        });
+    }
 
     @Override
     public List<SourceRecord> poll() {
@@ -107,29 +125,17 @@ public class AwsStorageSourceTask extends SourceTask {
                     return null;
                 }
                 topicPartition = String.format("%s/%d", topicPartitionSegmentParser.getTopic(), topicPartitionSegmentParser.getPartition());
+                topicPartitionRestoredRecords.putIfAbsent(topicPartition, 1L);
                 long lastReadOffset = awsSourceReader.getLastReadOffset(topicPartition);
                 boolean notComplete;
                 do {
                     SourceRecord record = topicPartitionSegmentParser.getNextRecord(10L, TimeUnit.SECONDS);
                     if (record != null) {
                         long recordOffset = (Long) record.sourceOffset().get("lastReadOffset");
-                        if (lastReadOffset == recordOffset - 1 || lastReadOffset == -1) {
-                            recordsToBeDelivered.add(record);
-                            lastReadOffset = recordOffset;
-                            awsSourceReader.setLastReadOffset(topicPartition, lastReadOffset);
-                        } else if (lastReadOffset >= recordOffset) {
-                            //duplicates
-                            log.warn("Lower offset encountered when reading data. " +
-                                    "Record Offset :  {}, " +
-                                    "last submitted offset {}", recordOffset, lastReadOffset);
-                        } else {
-                            log.error("Found record that is not next offset while parsing {}," +
-                                            " last committed record offset : {}," +
-                                            " current record offset : {} ",
-                                    record.sourceOffset().get("s3ObjectKey"), lastReadOffset, recordOffset);
-                            throw new MissingRecordsException(String.format("Last successful committed record offset : %d , next record offset : %d",
-                                    lastReadOffset, recordOffset));
-                        }
+                        recordsToBeDelivered.add(record);
+                        offsetSource.syncGroupForOffset(new TopicPartition(topicPartitionSegmentParser.getTopic(),topicPartitionSegmentParser.getPartition()), awsSourceReader.getTopicOffset(topicPartition),recordOffset, topicPartitionRestoredRecords.get(topicPartition));
+                        topicPartitionRestoredRecords.put(topicPartition,topicPartitionRestoredRecords.get(topicPartition)+1);
+                        lastReadOffset = recordOffset;
                         notComplete = recordOffset != topicPartitionSegmentParser.getEndOffset();
                     } else {
                         log.error("s3 object content stream closed before reaching end offset record : {}", topicPartitionSegmentParser.getEndOffset());
@@ -173,7 +179,6 @@ public class AwsStorageSourceTask extends SourceTask {
         }
         return sourceRecords;
     }
-
 
     @Override
     public void stop() {

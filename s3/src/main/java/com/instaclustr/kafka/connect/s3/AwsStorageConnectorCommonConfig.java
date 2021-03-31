@@ -18,11 +18,10 @@ import java.util.regex.Pattern;
 
 public class AwsStorageConnectorCommonConfig {
     public static final String BUCKET = "aws.s3.bucket";
-
     public static final String AWS_REGION = "aws.region";
-
-    public static final String S3_KEY_PREFIX = "prefix"; 
-
+    public static final String S3_KEY_PREFIX = "prefix";
+    public static final String CONNECT_DISTRIBUTED_PROPERTIES = "/etc/kafka/connect-distributed.properties";
+    public static final String SINK_TP_TOTALRECORDS = "Sink_TP_TotalRecords";
     public static final String DEFAULT_AWS_REGION = Regions.DEFAULT_REGION.getName();
 
     private AwsStorageConnectorCommonConfig() {}
@@ -63,12 +62,12 @@ public class AwsStorageConnectorCommonConfig {
             s3Client.shutdown();
         } catch (AmazonS3Exception e) {
             switch (e.getErrorCode()) {
-	            case "InvalidAccessKeyId":
-	                addErrorMessageToConfigObject(configObject, "", "The AWS AccessKeyId is invalid");
-	                break;
-	            case "SignatureDoesNotMatch":
-	                addErrorMessageToConfigObject(configObject, "", "The AWS SecretKey is invalid");
-	                break;
+                case "InvalidAccessKeyId":
+                    addErrorMessageToConfigObject(configObject, "", "The AWS AccessKeyId is invalid");
+                    break;
+                case "SignatureDoesNotMatch":
+                    addErrorMessageToConfigObject(configObject, "", "The AWS SecretKey is invalid");
+                    break;
                 case "InvalidBucketName":
                     addErrorMessageToConfigObject(configObject, BUCKET, "The defined bucket name is invalid");
                     break;
